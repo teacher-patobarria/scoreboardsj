@@ -257,37 +257,56 @@ video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:
 .start-phase-label{font-size:17px;font-weight:800;margin-bottom:4px;min-height:26px}
 .start-phase-label.done-msg{background:linear-gradient(135deg,#8ce99a,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
 .not-ready-card{margin-top:14px;text-align:center}
-.not-ready-textarea{
-  width:100%;max-width:640px;margin:0 auto;display:block;resize:vertical;
-  background:#100e24;border:1px solid var(--line);border-radius:12px;color:var(--text);
-  padding:12px 14px;font-size:14px;font-family:inherit;line-height:1.5;
+.nr-search-wrap{position:relative;max-width:420px;margin:0 auto}
+.nr-search{
+  width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
+  background:#100e24;color:var(--text);font-size:14px;font-family:inherit;
 }
-.not-ready-textarea:focus{outline:none;border-color:#7c3aed}
+.nr-search:focus{outline:none;border-color:#7c3aed}
+.nr-search:disabled{opacity:.5;cursor:not-allowed}
+.nr-suggestions{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--cardSolid);border:1px solid var(--line);
+  border-radius:12px;max-height:220px;overflow-y:auto;z-index:20;box-shadow:0 12px 30px #0008;display:none;text-align:left;
+}
+.nr-suggestions.show{display:block}
+.nr-suggestion-item{padding:10px 14px;cursor:pointer;font-size:13.5px}
+.nr-suggestion-item:hover{background:#221f45}
+.nr-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;min-height:20px}
+.nr-chip{
+  display:inline-flex;align-items:center;gap:6px;background:#3a1c2ab0;border:1px solid #ff5d5d55;color:#ffd6d6;
+  padding:6px 8px 6px 12px;border-radius:999px;font-size:12.5px;font-weight:700;
+}
+.nr-chip button{background:none;border:none;color:#ff8f8f;font-size:15px;cursor:pointer;padding:0 4px;line-height:1}
+.nr-chip button:hover{color:#fff}
 
-/* ===== FULLSCREEN / KIOSK MODE ===== */
+/* ===== FULLSCREEN / KIOSK MODE =====
+   Importante: usamos vmin (no vw) para que el tamaño se limite tanto por el ancho
+   como por el alto de la pantalla. Con vw, en monitores anchos pero bajos el
+   contenido (título + pasos + reloj) terminaba siendo más alto que el viewport y
+   el título quedaba empujado fuera de la pantalla visible. */
 body.fs-active header.top,
 body.fs-active nav.tabs,
 body.fs-active footer.settings,
 body.fs-active > .app > .hint,
 body.fs-active .not-ready-card{ display:none !important; }
 body.fs-active .app{max-width:100%;padding:0;display:flex;min-height:100vh}
-body.fs-active .section.active{display:flex !important;flex:1;align-items:center;justify-content:center;width:100%}
-body.fs-active .start-wrap{width:100%;max-width:100%}
-body.fs-active .card{border:none;background:transparent;box-shadow:none;backdrop-filter:none;padding:20px}
-body.fs-active .start-title{font-size:min(9vw,80px);margin-bottom:10px}
-body.fs-active .start-sub{font-size:min(2.6vw,22px);margin-bottom:36px}
-body.fs-active .start-steps{margin-bottom:36px;gap:0}
-body.fs-active .step-circle{width:min(18vw,150px);height:min(18vw,150px);font-size:min(7vw,60px);border-width:3px}
-body.fs-active .step-label{font-size:min(3.2vw,28px);max-width:min(28vw,260px);line-height:1.25}
-body.fs-active .start-line{width:min(16vw,180px);height:5px;margin-top:min(9vw,75px)}
-body.fs-active .start-phase-label{font-size:min(6vw,52px);min-height:auto;margin-bottom:14px}
-body.fs-active .timer-display{font-size:min(30vw,320px);margin:10px 0}
-body.fs-active .timer-progress-wrap{max-width:min(80vw,900px);height:28px}
-body.fs-active .timer-controls{margin-top:min(4vw,36px) !important}
-body.fs-active .timer-controls .btn{font-size:min(2.2vw,18px);padding:min(1.6vw,16px) min(2.4vw,24px)}
+body.fs-active .section.active{display:flex !important;flex:1;align-items:center;justify-content:center;width:100%;overflow:auto;padding:2vmin}
+body.fs-active .start-wrap{width:100%;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+body.fs-active .card{border:none;background:transparent;box-shadow:none;backdrop-filter:none;padding:2vmin}
+body.fs-active .start-title{font-size:min(7vmin,64px);margin:0 0 1vmin}
+body.fs-active .start-sub{font-size:min(2.2vmin,18px);margin-bottom:2.5vmin}
+body.fs-active .start-steps{margin-bottom:2.5vmin;gap:0}
+body.fs-active .step-circle{width:min(13vmin,110px);height:min(13vmin,110px);font-size:min(5vmin,42px);border-width:3px}
+body.fs-active .step-label{font-size:min(2.4vmin,20px);max-width:min(22vmin,200px);line-height:1.25}
+body.fs-active .start-line{width:min(11vmin,130px);height:5px;margin-top:min(6.5vmin,52px)}
+body.fs-active .start-phase-label{font-size:min(4.2vmin,36px);min-height:auto;margin-bottom:1.5vmin}
+body.fs-active .timer-display{font-size:min(20vmin,200px);margin:1vmin 0}
+body.fs-active .timer-progress-wrap{max-width:min(70vmin,760px);height:min(3vmin,24px);margin:2vmin auto 6px}
+body.fs-active .timer-controls{margin-top:min(3vmin,28px) !important}
+body.fs-active .timer-controls .btn{font-size:min(1.8vmin,16px);padding:min(1.4vmin,14px) min(2vmin,20px)}
 /* TIMER tab en fullscreen también se ve más grande */
-body.fs-active .timer-wrap .timer-stepper{gap:min(2vw,18px)}
-body.fs-active .stepper-btn{font-size:min(2.4vw,20px);padding:min(2vw,18px) min(2.4vw,22px)}
+body.fs-active .timer-wrap .timer-stepper{gap:min(1.6vmin,14px)}
+body.fs-active .stepper-btn{font-size:min(2vmin,18px);padding:min(1.6vmin,16px) min(2vmin,20px)}
 
 /* modal */
 .modal-bg{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
@@ -399,15 +418,20 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       <div class="timer-controls" style="margin-top:20px">
         <button class="btn btn-primary" id="startRoutineBtn" onclick="startClassRoutine()">▶ Start</button>
         <button class="btn btn-ghost" onclick="resetClassRoutine()">⟲ Reset</button>
-        <button class="btn btn-ghost" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        <button class="btn btn-ghost" onclick="toggleFullscreen()">🔳 Fullscreen</button>
       </div>
     </div>
 
     <div class="card not-ready-card" id="notReadyCard">
       <h3 style="margin:0 0 10px">⚠️ Students Who Were Not Ready</h3>
-      <p class="session-note" style="margin:0 0 10px">Write down the names of students who did not meet the goal today.</p>
-      <textarea id="notReadyList" class="not-ready-textarea" rows="4" placeholder="Type student names here, one per line..." oninput="saveNotReadyList()"></textarea>
-      <div style="display:flex;gap:10px;margin-top:10px;justify-content:center">
+      <p class="session-note" style="margin:0 0 12px" id="notReadyHint">Select a course above, then search and click a student's name to mark them as not ready today.</p>
+      <div class="nr-search-wrap">
+        <input type="text" id="notReadySearch" class="nr-search" placeholder="🔍 Search student name..." oninput="renderNotReadySuggestions()" onfocus="renderNotReadySuggestions()" autocomplete="off">
+        <div class="nr-suggestions" id="notReadySuggestions"></div>
+      </div>
+      <div class="nr-chips" id="notReadyChips"></div>
+      <div class="timer-controls" style="margin-top:16px">
+        <button class="btn btn-primary" onclick="giveWholeClassPoint()">✅ +1 to Everyone Except These</button>
         <button class="btn btn-ghost" onclick="clearNotReadyList()">🗑️ Clear list</button>
       </div>
     </div>
@@ -796,6 +820,7 @@ function bootWorkspace(cfg){
   renderYearProgress();
   renderAll();
   loadNotReadyList();
+  renderNotReadySuggestions();
 }
 
 let cloudListenerRef = null;
@@ -1147,6 +1172,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
   document.getElementById("claseBloque").addEventListener("change", onDateOrBloqueChange);
   initTimerUI();
   initClassStartUI();
+  document.addEventListener("click", (e)=>{
+    const wrap = document.querySelector(".nr-search-wrap");
+    if(wrap && !wrap.contains(e.target)) hideNotReadySuggestions();
+  });
   resizeConfetti();
   setSyncBadge(false);
   initAuthGate(); // esta función llama a bootWorkspace() -> loadState()/buildClassbar()/renderAll() una vez resuelto quién inició sesión
@@ -1165,6 +1194,8 @@ function setClass(c){
   currentClass = c;
   document.querySelectorAll(".chip").forEach(b=> b.classList.toggle("active", b.dataset.cls===c));
   renderAll();
+  loadNotReadyList();
+  renderNotReadySuggestions();
 }
 function bindTabs(){
   document.querySelectorAll("nav.tabs button").forEach(btn=>{
@@ -1185,6 +1216,7 @@ function renderAll(){
   renderPodio();
   renderCalendario();
   updateDrawStatus();
+  renderNotReadyChips();
 }
 
 /* ============ MARCADOR ============ */
@@ -1740,23 +1772,97 @@ document.addEventListener("fullscreenchange", ()=>{
   document.body.classList.toggle("fs-active", !!document.fullscreenElement);
 });
 
-/* ============ STUDENTS WHO WERE NOT READY (Class Preparation) ============ */
-function notReadyKey(){ return "class_prep_not_ready__" + (CURRENT_WORKSPACE_ID||"pato"); }
+/* ============ STUDENTS WHO WERE NOT READY (Class Preparation) ============
+   La lista guarda IDs reales de estudiantes (mismo formato "curso::slug" que usa
+   todo el resto de la app), buscados/elegidos desde el roster del curso seleccionado
+   arriba. Se guarda en localStorage por profesor + curso, así no se mezclan entre cursos. */
+let notReadySelected = new Set();
+function notReadyKey(){ return "class_prep_not_ready__" + (CURRENT_WORKSPACE_ID||"pato") + "__" + currentClass; }
 function loadNotReadyList(){
-  const el = document.getElementById("notReadyList");
-  if(!el) return;
-  el.value = localStorage.getItem(notReadyKey()) || "";
+  try{
+    const raw = JSON.parse(localStorage.getItem(notReadyKey()) || "[]");
+    notReadySelected = new Set(Array.isArray(raw) ? raw : []);
+  }catch(e){ notReadySelected = new Set(); }
+  renderNotReadyChips();
 }
-function saveNotReadyList(){
-  const el = document.getElementById("notReadyList");
-  if(!el) return;
-  localStorage.setItem(notReadyKey(), el.value);
+function saveNotReadyListStorage(){
+  localStorage.setItem(notReadyKey(), JSON.stringify([...notReadySelected]));
+}
+function addNotReady(id){
+  notReadySelected.add(id);
+  saveNotReadyListStorage();
+  renderNotReadyChips();
+  const input = document.getElementById("notReadySearch");
+  if(input){ input.value = ""; input.focus(); }
+  renderNotReadySuggestions();
+}
+function removeNotReady(id){
+  notReadySelected.delete(id);
+  saveNotReadyListStorage();
+  renderNotReadyChips();
+  renderNotReadySuggestions();
 }
 function clearNotReadyList(){
-  const el = document.getElementById("notReadyList");
-  if(!el) return;
-  el.value = "";
-  saveNotReadyList();
+  notReadySelected.clear();
+  saveNotReadyListStorage();
+  renderNotReadyChips();
+  renderNotReadySuggestions();
+}
+function renderNotReadyChips(){
+  const box = document.getElementById("notReadyChips");
+  if(!box) return;
+  if(currentClass==="Todas" || !state){ box.innerHTML = ""; return; }
+  const items = [...notReadySelected].map(id=>{
+    const st = state.students[id];
+    return st ? {id, name: st.name} : null;
+  }).filter(Boolean);
+  box.innerHTML = items.length ? items.map(it=>
+    `<span class="nr-chip">${it.name}<button onclick="removeNotReady('${it.id}')" title="Remove">✕</button></span>`
+  ).join("") : `<span style="color:var(--muted);font-size:12.5px">No students marked yet.</span>`;
+}
+function renderNotReadySuggestions(){
+  const input = document.getElementById("notReadySearch");
+  const list = document.getElementById("notReadySuggestions");
+  const hint = document.getElementById("notReadyHint");
+  if(!input || !list) return;
+  if(currentClass==="Todas"){
+    list.classList.remove("show"); list.innerHTML = "";
+    input.disabled = true; input.placeholder = "Select a course above first...";
+    if(hint) hint.textContent = "Select a course above, then search and click a student's name to mark them as not ready today.";
+    return;
+  }
+  input.disabled = false; input.placeholder = "🔍 Search student name...";
+  if(hint) hint.textContent = "Search and click a student's name to mark them as not ready today.";
+  const q = input.value.trim().toLowerCase();
+  const roster = (CLASS_DATA[currentClass]||[]).map(name=>({id: currentClass+"::"+slug(name), name}))
+    .filter(s=>!notReadySelected.has(s.id));
+  const matches = (q ? roster.filter(s=>s.name.toLowerCase().includes(q)) : roster).slice(0,8);
+  if(!matches.length){ list.classList.remove("show"); list.innerHTML = ""; return; }
+  list.innerHTML = matches.map(s=>`<div class="nr-suggestion-item" onclick="addNotReady('${s.id}')">${s.name}</div>`).join("");
+  list.classList.add("show");
+}
+function hideNotReadySuggestions(){
+  const list = document.getElementById("notReadySuggestions");
+  if(list) list.classList.remove("show");
+}
+function giveWholeClassPoint(){
+  if(currentClass==="Todas"){ alert("Select a course above first."); return; }
+  const roster = CLASS_DATA[currentClass] || [];
+  if(!roster.length){ alert("This course has no students registered."); return; }
+  let given = 0, skipped = 0;
+  roster.forEach(name=>{
+    const id = currentClass+"::"+slug(name);
+    const st = state.students[id];
+    if(!st) return;
+    if(notReadySelected.has(id)){ skipped++; return; }
+    st.history.push({d: currentDate, t: Date.now(), p: 1, b: currentBloque, r: "inicio"});
+    given++;
+  });
+  save();
+  playFanfare();
+  celebrate();
+  renderAll();
+  alert(`✅ +1 point given to ${given} student(s).${skipped ? " "+skipped+" student(s) skipped (not ready)." : ""}`);
 }
 
 /* ============ INICIO DE CLASE (Start of Class) ============ */
