@@ -8,6 +8,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg1:#0b0f1e; --bg2:#161327; --card:#1b1836cc; --cardSolid:#1c1a35;
@@ -138,7 +141,7 @@ tbody tr.top3{background:linear-gradient(90deg,#3a2515,#1a1730)}
 .tagcls{font-size:10px; padding:2px 8px;border-radius:999px;font-weight:800;margin-left:8px;color:#0b0f1e}
 .level{font-size:11px;color:var(--muted);display:block;margin-top:2px}
 .total{font-weight:900;font-size:18px}
-.actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+.actions-cell{display:flex;flex-direction:column;gap:5px;min-width:180px}
 .btn{border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer;font-size:13px;transition:.12s;color:#08081a}
 .btn:active{transform:scale(.93)}
 .btn-1{background:#8ce99a}
@@ -146,7 +149,11 @@ tbody tr.top3{background:linear-gradient(90deg,#3a2515,#1a1730)}
 .btn-2{background:linear-gradient(135deg,#8ce99a,#22d3ee); font-size:16px; padding:10px 20px}
 .btn-2:active{animation:btnPop .35s ease}
 @keyframes btnPop{0%{transform:scale(1)}40%{transform:scale(.8) rotate(-6deg)}100%{transform:scale(1)}}
-.btn-undo{background:#2c2954;color:var(--text);font-weight:700}
+.reason-btn{display:flex;align-items:center;gap:6px;justify-content:flex-start;padding:6px 10px;font-size:11.5px;box-shadow:0 3px 10px #0005;letter-spacing:.01em}
+.reason-btn b{font-size:13px}
+.reason-btn:active{animation:btnPop .35s ease}
+.reason-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-undo{background:#2c2954;color:var(--text);font-weight:700;align-self:flex-end;padding:4px 10px;font-size:11px}
 .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
 .btn-primary{background:linear-gradient(135deg,#7c3aed,#22d3ee)}
 .btn-danger{background:#ef4444;color:#fff}
@@ -184,6 +191,7 @@ tbody tr.flash{animation:rowFlash 900ms ease}
 
 .camera-box{margin-top:18px;border-top:1px dashed var(--line);padding-top:18px}
 video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:none}
+.ranking-scroll{max-height:420px;overflow-y:auto;padding-right:4px}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:14px}
 .photo-card{background:#100e24;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .photo-card img{width:100%;height:110px;object-fit:cover;display:block}
@@ -220,6 +228,13 @@ video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:
 }
 .timer-display.danger{color:#ff5d5d; text-shadow:0 0 30px #ff5d5d88; animation:pulse .8s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.timer-stepper{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.stepper-btn{background:linear-gradient(135deg,#2c2954,#1c1a35);color:var(--text);border:1px solid var(--line);font-size:18px;padding:14px 18px;border-radius:14px;font-weight:900}
+.stepper-btn.stepper-small{font-size:13px;padding:10px 12px}
+.stepper-btn:hover{filter:brightness(1.2)}
+.timer-progress-wrap{max-width:460px;height:18px;margin:20px auto 6px;border-radius:999px;background:#100e24;border:1px solid var(--line);overflow:hidden;box-shadow:inset 0 2px 6px #0008}
+.timer-progress-bar{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#7c3aed,#ec4899);box-shadow:0 0 16px #22d3eecc,0 0 30px #7c3aedaa;transition:width .35s linear, background .3s}
+.timer-progress-bar.danger{background:linear-gradient(90deg,#ff5d5d,#ffd166);box-shadow:0 0 18px #ff5d5dcc,0 0 32px #ffd166aa}
 .presets{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .timer-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .custom-time{display:flex;justify-content:center;gap:8px;align-items:center;margin:14px 0}
@@ -232,6 +247,22 @@ video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:
 .modal h3{margin-top:0}
 .modal-close{float:right;cursor:pointer;background:none;border:none;color:var(--muted);font-size:18px}
 .event-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+
+/* ===== INTERESTING FACT (calendario) ===== */
+.fact-card{text-align:center;padding:6px 0 18px}
+.fact-icon-wrap{position:relative;width:104px;height:104px;margin:6px auto 14px;display:flex;align-items:center;justify-content:center}
+.fact-icon-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,var(--fc1,#22d3ee),var(--fc2,#a855f7),var(--fc1,#22d3ee));animation:factSpin 4s linear infinite;filter:blur(1px)}
+.fact-icon-ring::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--cardSolid)}
+.fact-icon{position:relative;font-size:44px;filter:drop-shadow(0 0 12px var(--fc1,#22d3ee)) drop-shadow(0 0 22px var(--fc2,#a855f7));animation:factGlow 2.2s ease-in-out infinite}
+@keyframes factSpin{to{transform:rotate(360deg)}}
+@keyframes factGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.fact-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:800;margin-bottom:6px}
+.fact-title{font-family:"Fredoka",-apple-system,sans-serif;font-size:24px;font-weight:700;margin:0 0 10px;
+  background:linear-gradient(135deg,var(--fc1,#22d3ee),var(--fc2,#a855f7));-webkit-background-clip:text;background-clip:text;color:transparent}
+.fact-text{font-size:14.5px;line-height:1.55;color:var(--text);max-width:360px;margin:0 auto}
+.fact-divider{border:none;border-top:1px dashed var(--line);margin:20px 0 14px}
+.day-activity-title{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.daycell .fact-dot{position:absolute;bottom:3px;left:5px;font-size:8px;opacity:.65}
 
 footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-content:center}
 .hint{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5}
@@ -386,11 +417,13 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       </div>
 
       <div class="top10-box" id="top10Box" style="text-align:left;margin-top:8px">
-        <h3 style="margin:0 0 10px;text-align:center">🏅 Top 10</h3>
-        <table>
-          <thead><tr><th></th><th>Estudiante</th><th>Pts</th></tr></thead>
-          <tbody id="top10Rows"></tbody>
-        </table>
+        <h3 style="margin:0 0 10px;text-align:center">🏅 Ranking completo del curso</h3>
+        <div class="ranking-scroll">
+          <table>
+            <thead><tr><th></th><th>Estudiante</th><th>Pts</th></tr></thead>
+            <tbody id="top10Rows"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="camera-box">
@@ -435,10 +468,19 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
         <button class="btn btn-ghost" id="modeCountdown" onclick="setTimerMode('countdown')">⏳ Cuenta regresiva</button>
         <button class="btn btn-ghost" id="modeStopwatch" onclick="setTimerMode('stopwatch')">⏱️ Cronómetro</button>
       </div>
-      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="timer-stepper" id="timerStepper">
+        <button class="btn stepper-btn" onclick="adjustTimer(-60)">− 1 min</button>
+        <button class="btn stepper-btn stepper-small" onclick="adjustTimer(-10)">−10s</button>
+        <div class="timer-display" id="timerDisplay">00:00</div>
+        <button class="btn stepper-btn stepper-small" onclick="adjustTimer(10)">+10s</button>
+        <button class="btn stepper-btn" onclick="adjustTimer(60)">+ 1 min</button>
+      </div>
+      <div class="timer-progress-wrap" id="timerProgressWrap">
+        <div class="timer-progress-bar" id="timerProgressBar"></div>
+      </div>
 
       <div class="custom-time" id="customTimeRow">
-        <input type="number" id="customMin" min="0" max="59" value="1"> min
+        <input type="number" id="customMin" min="0" max="180" value="1"> min
         <input type="number" id="customSec" min="0" max="59" value="0"> seg
         <button class="btn btn-ghost" onclick="setCustomTime()">Fijar</button>
       </div>
@@ -523,6 +565,14 @@ const CARLOS_CLASS_BLOCKS = {
 };
 
 const GENERIC_BLOCKS = [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}];
+
+/* Los 3 motivos por los que se otorgan puntos (+2 cada uno, se puede repetir varias veces por clase). */
+const POINT_REASONS = [
+  {code:"participacion", emoji:"🗣️", short:"Uso del inglés", label:"Participación y uso del inglés", c1:"#22d3ee", c2:"#7c3aed"},
+  {code:"actitud",       emoji:"🌟", short:"Actitud",        label:"Comportamiento y actitud al final de la clase", c1:"#ffd166", c2:"#ff5d5d"},
+  {code:"inicio",        emoji:"📋", short:"Material listo", label:"Inicio de clase y material preparado sobre la mesa", c1:"#8ce99a", c2:"#22c55e"},
+];
+function reasonInfo(code){ return POINT_REASONS.find(r=>r.code===code) || {emoji:"🎉", c1:"#8ce99a", c2:"#22c55e"}; }
 
 /* Mapa de profesores: cada correo ve solo sus propios cursos y datos, separados entre sí. */
 const TEACHERS = {
@@ -911,20 +961,28 @@ function startRandomDraw(){
   const subEl = document.getElementById("drawSub");
   nameEl.classList.remove("reveal"); nameEl.classList.add("spinning");
   subEl.textContent = "";
-  clearTimeout(drawTimer);
+  cancelAnimationFrame(drawTimer);
 
-  let delay = 55, ticks = 0;
-  const maxTicks = 22 + Math.floor(Math.random()*6);
-  function tick(){
-    const r = all[Math.floor(Math.random()*all.length)];
-    nameEl.textContent = r.name;
-    playTick(ticks);
-    ticks++;
-    delay = Math.min(400, delay*1.16);
-    if(ticks < maxTicks){ drawTimer = setTimeout(tick, delay); }
-    else{ finishDraw(winner); }
+  const DRAW_MS = 4000; // duración total exacta del sorteo
+  const startT = performance.now();
+  let nextChange = 0, tickCount = 0;
+  function frame(now){
+    const elapsed = now - startT;
+    if(elapsed >= DRAW_MS){
+      finishDraw(winner);
+      return;
+    }
+    if(elapsed >= nextChange){
+      const r = all[Math.floor(Math.random()*all.length)];
+      nameEl.textContent = r.name;
+      playTick(tickCount++);
+      const t = elapsed / DRAW_MS; // 0 → 1, controla qué tan rápido cambian los nombres (empieza rápido, termina lento)
+      const interval = 55 + (380-55) * (t*t);
+      nextChange = elapsed + interval;
+    }
+    drawTimer = requestAnimationFrame(frame);
   }
-  tick();
+  drawTimer = requestAnimationFrame(frame);
 }
 function finishDraw(winner){
   const nameEl = document.getElementById("drawName");
@@ -942,7 +1000,7 @@ function finishDraw(winner){
   updateDrawStatus();
 }
 function closeDrawModal(){
-  clearTimeout(drawTimer);
+  cancelAnimationFrame(drawTimer);
   document.getElementById("drawModalBg").classList.remove("show");
 }
 function playTick(i){
@@ -1072,7 +1130,7 @@ function renderMarcador(){
       <td class="total">${total}</td>
       <td>
         <div class="actions-cell">
-          <button class="btn btn-2" onclick="addPoint('${st.id}',2,event)">✋ +2 Participó</button>
+          ${POINT_REASONS.map(r=>`<button class="btn reason-btn" style="background:linear-gradient(135deg,${r.c1},${r.c2})" onclick="addPoint('${st.id}',2,event,'${r.code}')" title="${r.label}"><b>+2</b> ${r.emoji} ${r.short}</button>`).join("")}
           <button class="btn btn-undo" onclick="undoLast('${st.id}')">⟲ deshacer</button>
         </div>
       </td>
@@ -1080,19 +1138,20 @@ function renderMarcador(){
   }).join("") || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin estudiantes para este filtro</td></tr>`;
 }
 
-function addPoint(id, pts, evt){
+function addPoint(id, pts, evt, reason){
   const st = state.students[id];
   if(!st) return;
-  st.history.push({d: currentDate, t: Date.now(), p: pts, b: currentBloque});
+  st.history.push({d: currentDate, t: Date.now(), p: pts, b: currentBloque, r: reason||null});
   save();
   playDing();
   if(evt){
+    const info = reasonInfo(reason);
     const f = document.createElement("div");
     f.className="floatpts";
     f.style.left=(evt.clientX-10)+"px";
     f.style.top=(evt.clientY-20)+"px";
-    f.style.color = "#8ce99a";
-    f.textContent = "+"+pts+" 🎉";
+    f.style.color = info.c1;
+    f.textContent = "+"+pts+" "+info.emoji;
     document.body.appendChild(f);
     setTimeout(()=>f.remove(),900);
   }
@@ -1169,8 +1228,7 @@ function renderPodio(){
     </div>`;
   }).join("");
 
-  const top10 = ranked.slice(0,10);
-  document.getElementById("top10Rows").innerHTML = top10.map((st,i)=>{
+  document.getElementById("top10Rows").innerHTML = ranked.map((st,i)=>{
     const pts = fn(st);
     const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);
     const rankClass = i===0?"top1":i===1?"top2":i===2?"top3":"";
@@ -1289,6 +1347,140 @@ function deletePhoto(id){
   save(); renderGallery();
 }
 
+/* ============ INTERESTING FACTS (uno distinto por día, inglés nivel A2) ============ */
+const FACT_CATS = {
+  animals:  {emoji:"🦁", c1:"#f97316", c2:"#ffd166"},
+  space:    {emoji:"🚀", c1:"#7c3aed", c2:"#22d3ee"},
+  ocean:    {emoji:"🐋", c1:"#06b6d4", c2:"#38bdf8"},
+  body:     {emoji:"🫀", c1:"#ec4899", c2:"#f472b6"},
+  geo:      {emoji:"🌍", c1:"#22c55e", c2:"#4ade80"},
+  inventions:{emoji:"💡", c1:"#eab308", c2:"#fbbf24"},
+  food:     {emoji:"🍎", c1:"#ef4444", c2:"#f87171"},
+  weather:  {emoji:"⛈️", c1:"#38bdf8", c2:"#7dd3fc"},
+  plants:   {emoji:"🌱", c1:"#84cc16", c2:"#a3e635"},
+};
+const FACTS_RAW = [
+["animals","Giraffe Necks","A giraffe's neck is very long, but it has only seven neck bones — the same number as a human!"],
+["animals","Octopus Hearts","An octopus has three hearts and blue blood."],
+["animals","Sleepy Koalas","Koalas sleep for about 20 hours every day."],
+["animals","Bee Dance","Honey bees dance to tell other bees where to find flowers."],
+["animals","Elephant Memory","Elephants can remember other elephants for many years."],
+["animals","Cat Naps","Cats sleep for about 15 hours a day."],
+["animals","Penguin Parents","Some penguin dads keep the egg warm for two months without eating."],
+["animals","Chameleon Colors","Chameleons change color to hide or to show their feelings."],
+["animals","Dolphin Names","Dolphins can call each other with special sounds, like names."],
+["animals","Owl Necks","Owls can turn their heads almost all the way around."],
+["animals","Ant Strength","An ant can carry things that are 50 times heavier than its body."],
+["animals","Butterfly Taste","Butterflies taste food with their feet."],
+["animals","Snail Sleep","A snail can sleep for three years."],
+["animals","Kangaroo Jumps","Kangaroos cannot walk backward."],
+["animals","Flamingo Color","Flamingos are pink because of the food they eat."],
+["animals","Whale Songs","Whales sing songs that can travel for many kilometers under the water."],
+["animals","Spider Webs","Spider silk is stronger than steel of the same size."],
+["animals","Tiger Stripes","No two tigers have the same pattern of stripes."],
+["space","Sun Size","The Sun is so big that one million Earths could fit inside it."],
+["space","Moon Walk","Twelve people have walked on the Moon."],
+["space","Saturn Rings","Saturn's rings are made mostly of ice and rock."],
+["space","Venus Day","A day on Venus is longer than a year on Venus."],
+["space","Mars Color","Mars looks red because of rust in its soil."],
+["space","Old Starlight","Some stars we see in the sky are already gone."],
+["space","Black Holes","A black hole's gravity is so strong that even light cannot escape."],
+["space","Space Silence","There is no sound in space because there is no air."],
+["space","Milky Way","Our galaxy is called the Milky Way, and it has billions of stars."],
+["space","Jupiter Storm","Jupiter has a giant storm bigger than Earth called the Great Red Spot."],
+["space","Astronaut Height","Astronauts can grow a few centimeters taller in space."],
+["space","Mercury Temperature","Mercury is very hot in the day and very cold at night."],
+["space","Shooting Stars","A shooting star is not a star — it is a small rock burning in the sky."],
+["space","Space Suits","A space suit protects astronauts and lets them breathe in space."],
+["ocean","Deepest Point","The deepest part of the ocean is called the Mariana Trench."],
+["ocean","Blue Whale","The blue whale is the biggest animal that has ever lived on Earth."],
+["ocean","Coral Reefs","Coral reefs are home to thousands of different sea animals."],
+["ocean","Ocean Size","The ocean covers more than 70% of the Earth's surface."],
+["ocean","Old Jellyfish","Jellyfish have been in the ocean for more than 500 million years."],
+["ocean","Seahorse Dads","Male seahorses carry the babies, not the females."],
+["ocean","Starfish Arms","A starfish can grow a new arm if it loses one."],
+["ocean","Shark Teeth","Sharks can lose thousands of teeth in their life and grow new ones."],
+["ocean","Sea Otter Hands","Sea otters hold hands while they sleep so they don't float apart."],
+["ocean","Unexplored Ocean","We have explored less than 20% of the ocean."],
+["ocean","Clownfish Homes","Clownfish live safely inside sea anemones."],
+["ocean","Giant Squid Eyes","The giant squid has the biggest eyes in the animal world."],
+["ocean","Ocean Waves","Wind makes most of the waves we see on the ocean."],
+["ocean","Turtle Journeys","Sea turtles can swim thousands of kilometers to lay their eggs."],
+["body","Heartbeats","Your heart beats about 100,000 times every day."],
+["body","Bone Count","Babies are born with about 300 bones, but adults have only 206."],
+["body","Brain Power","Your brain uses about 20% of your body's energy."],
+["body","Skin Layer","Your skin is the biggest organ in your body."],
+["body","Sneeze Speed","A sneeze can leave your body at a very high speed."],
+["body","Nose Memory","Your nose can remember thousands of different smells."],
+["body","Blinking Eyes","You blink your eyes about 15 times every minute."],
+["body","Taste Buds","You have about 10,000 taste buds on your tongue."],
+["body","Growing Hair","Hair grows faster in summer than in winter."],
+["body","Body Water","More than half of your body is made of water."],
+["body","Fingerprints","No two people in the world have the same fingerprints."],
+["body","Yawning","Yawning can help cool down your brain."],
+["body","Laughing Muscles","You use many muscles in your face when you laugh."],
+["body","Sleep Time","Most people spend about one third of their life sleeping."],
+["geo","Tallest Mountain","Mount Everest is the tallest mountain above sea level."],
+["geo","Longest River","The Nile is one of the longest rivers in the world."],
+["geo","Biggest Desert","The biggest hot desert in the world is the Sahara, in Africa."],
+["geo","Smallest Country","Vatican City is the smallest country in the world."],
+["geo","Coldest Place","Antarctica is the coldest continent on Earth."],
+["geo","Biggest Ocean","The Pacific Ocean is the largest ocean on Earth."],
+["geo","Ring of Fire","Many earthquakes happen around the Pacific Ocean, in an area called the Ring of Fire."],
+["geo","Amazon Oxygen","The Amazon rainforest makes a lot of the world's oxygen."],
+["geo","Great Wall","The Great Wall of China is thousands of kilometers long."],
+["geo","Iceland's Name","Iceland has a lot of green land, and Greenland has a lot of ice."],
+["geo","Highest Waterfall","Angel Falls, in Venezuela, is the tallest waterfall in the world."],
+["geo","Seven Continents","There are seven continents on Earth."],
+["geo","Dead Sea Floating","You can float easily in the Dead Sea because the water is very salty."],
+["geo","Time Zones","The Earth is divided into 24 time zones."],
+["inventions","First Telephone","Alexander Graham Bell invented the telephone in 1876."],
+["inventions","Light Bulb","Thomas Edison helped make the electric light bulb popular."],
+["inventions","Internet Start","The internet started as a small network for scientists."],
+["inventions","First Airplane","The Wright brothers flew the first airplane in 1903."],
+["inventions","Printing Press","The printing press helped people share books and ideas faster."],
+["inventions","The Wheel","The wheel is one of the oldest and most important inventions."],
+["inventions","Early Cameras","Early cameras needed many minutes to take just one photo."],
+["inventions","First Computers","The first computers were as big as a whole room."],
+["inventions","Old Umbrellas","People have used umbrellas for more than 3,000 years."],
+["inventions","Velcro Idea","Velcro was invented after a man studied how seeds stick to clothes."],
+["inventions","The Zipper","The zipper took many years and many tries to become popular."],
+["inventions","First Chocolate Bar","The first chocolate bar was made in the 1800s."],
+["food","Honey Never Spoils","Honey can stay good to eat for thousands of years."],
+["food","Floating Apples","Apples float in water because they are 25% air."],
+["food","Banana Family","Bananas are berries, but strawberries are not."],
+["food","Carrot Colors","Carrots were originally purple, not orange."],
+["food","Chocolate Origin","Chocolate comes from the seeds of the cacao tree."],
+["food","Pizza History","Pizza started in Naples, Italy, hundreds of years ago."],
+["food","Rice Staple","Rice is a main food for more than half of the people in the world."],
+["food","Tomato Fruit","A tomato is a fruit, but we usually cook it like a vegetable."],
+["food","Old Popcorn","People have eaten popcorn for thousands of years."],
+["food","Tea Popularity","Tea is one of the most popular drinks in the world, after water."],
+["weather","Lightning Heat","For a moment, lightning is hotter than the surface of the Sun."],
+["weather","Snowflake Shapes","No two snowflakes look exactly the same."],
+["weather","Rainbow Colors","A rainbow has seven main colors."],
+["weather","What Makes Wind","Wind happens when air moves from high pressure to low pressure."],
+["weather","Cloud Types","Clouds have different names depending on their shape and height."],
+["weather","Hurricane Names","Hurricanes get names to make them easier to talk about."],
+["weather","Fog Formation","Fog is a cloud that touches the ground."],
+["weather","Thunder Sound","Thunder happens because lightning heats the air very fast."],
+["weather","Dry Deserts","Some deserts can go years without any rain."],
+["weather","The Ice Age","During the Ice Age, much of the Earth was covered in ice."],
+["plants","Oldest Trees","Some trees are more than 4,000 years old."],
+["plants","Sunflower Movement","Young sunflowers turn to follow the Sun during the day."],
+["plants","Fast Bamboo","Bamboo can grow very fast, even one meter in a single day."],
+["plants","Venus Flytrap","The Venus flytrap is a plant that eats small insects."],
+["plants","Tree Oxygen","One big tree can produce enough oxygen for two people."],
+["plants","Cactus Water","Cactus plants can store water for a very long time."],
+["plants","Traveling Seeds","Some seeds can travel far by flying in the wind."],
+["plants","Rainforest Plants","Rainforests have more plant species than any other place on Earth."],
+["plants","Flower Colors","Flowers use bright colors to attract bees and other insects."],
+["plants","Deep Roots","Some plant roots can grow deeper than the plant is tall."],
+];
+const FACTS = FACTS_RAW.map(([cat,title,fact])=>({...FACT_CATS[cat], title, fact}));
+function dayOfYear(d){ const start=new Date(d.getFullYear(),0,0); return Math.floor((d-start)/86400000); }
+function factForDate(dateObj){ return FACTS[dayOfYear(dateObj) % FACTS.length]; }
+
 /* ============ CALENDARIO ============ */
 let calViewDate = new Date();
 function classFilterFn(){ return currentClass==="Todas" ? ()=>true : s=>s.cls===currentClass; }
@@ -1335,8 +1527,8 @@ function renderCalendario(){
     const isWeekend = dateObj.getDay()===0 || dateObj.getDay()===6;
     const events = evByDay[key]||[];
     const cnt = events.reduce((s,e)=>s+e.pts,0);
-    html += `<div class="daycell ${isWeekend?'weekend':''} ${cnt?'has-activity':''} ${key===todayKey?'today':''}" onclick="openDay('${key}')">
-      <span class="n">${d}</span>${cnt?`<span class="cnt">+${cnt}</span>`:""}
+    html += `<div class="daycell ${isWeekend?'weekend':''} ${cnt?'has-activity':''} ${key===todayKey?'today':''}" onclick="openDay('${key}')" title="✨ Interesting fact + actividad del día">
+      <span class="n">${d}</span>${cnt?`<span class="cnt">+${cnt}</span>`:""}<span class="fact-dot">✨</span>
     </div>`;
   }
   grid.innerHTML = html;
@@ -1347,24 +1539,43 @@ function goToday(){ calViewDate = new Date(); renderCalendario(); }
 function openDay(key){
   const evByDay = allEventsByDay();
   const events = (evByDay[key]||[]).sort((a,b)=>b.t-a.t);
-  document.getElementById("modalTitle").textContent = "📅 "+new Date(key+"T12:00:00").toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long"});
-  document.getElementById("modalBody").innerHTML = events.length ? events.map(e=>`
+  const dateObj = new Date(key+"T12:00:00");
+  document.getElementById("modalTitle").textContent = "📅 "+dateObj.toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long"});
+
+  const fact = factForDate(dateObj);
+  const factHtml = `
+    <div class="fact-card" style="--fc1:${fact.c1};--fc2:${fact.c2}">
+      <div class="fact-eyebrow">✨ Interesting Fact of the Day</div>
+      <div class="fact-icon-wrap">
+        <div class="fact-icon-ring"></div>
+        <div class="fact-icon">${fact.emoji}</div>
+      </div>
+      <div class="fact-title">${fact.title}</div>
+      <p class="fact-text">${fact.fact}</p>
+    </div>
+    <hr class="fact-divider">
+    <div class="day-activity-title">📊 Actividad del día</div>`;
+
+  const eventsHtml = events.length ? events.map(e=>`
     <div class="event-row"><span>${e.name} <span class="tagcls" style="background:${CLASS_COLOR[e.cls]}">${e.cls}</span></span><b>+${e.pts}</b></div>`).join("")
     : `<p style="color:var(--muted)">Sin puntos registrados este día.</p>`;
+
+  document.getElementById("modalBody").innerHTML = factHtml + eventsHtml;
   document.getElementById("dayModalBg").classList.add("show");
 }
 function closeModal(){ document.getElementById("dayModalBg").classList.remove("show"); }
 
 /* ============ TIMER ============ */
-let timerMode="countdown", timerRunning=false, timerRemaining=60, timerElapsed=0, timerInterval=null;
+let timerMode="countdown", timerRunning=false, timerRemaining=60, timerElapsed=0, timerInterval=null, timerInitialSeconds=60;
 function initTimerUI(){ updateTimerDisplay(); setTimerMode("countdown"); }
 function setTimerMode(mode){
   timerMode=mode; pauseTimer();
-  timerRemaining = 60; timerElapsed=0;
+  timerRemaining = 60; timerInitialSeconds = 60; timerElapsed=0;
   document.getElementById("modeCountdown").classList.toggle("btn-primary", mode==="countdown");
   document.getElementById("modeStopwatch").classList.toggle("btn-primary", mode==="stopwatch");
   document.getElementById("customTimeRow").style.display = mode==="countdown"?"flex":"none";
   document.getElementById("presets").style.display = mode==="countdown"?"flex":"none";
+  document.getElementById("timerProgressWrap").style.display = mode==="countdown"?"block":"none";
   updateTimerDisplay();
 }
 function fmt(sec){
@@ -1377,16 +1588,35 @@ function updateTimerDisplay(){
   const el = document.getElementById("timerDisplay");
   const val = timerMode==="countdown" ? timerRemaining : timerElapsed;
   el.textContent = fmt(val);
-  el.classList.toggle("danger", timerMode==="countdown" && timerRemaining<=10 && timerRunning);
+  const danger = timerMode==="countdown" && timerRemaining<=10 && timerRunning;
+  el.classList.toggle("danger", danger);
+  if(timerMode==="countdown"){
+    const bar = document.getElementById("timerProgressBar");
+    const pct = timerInitialSeconds>0 ? Math.max(0,Math.min(100, timerRemaining/timerInitialSeconds*100)) : 0;
+    bar.style.width = pct+"%";
+    bar.classList.toggle("danger", danger);
+  }
 }
-function setPreset(sec){ timerRemaining=sec; timerElapsed=0; updateTimerDisplay(); }
+function setPreset(sec){ timerRemaining=sec; timerInitialSeconds=sec; timerElapsed=0; updateTimerDisplay(); }
 function setCustomTime(){
   const min = parseInt(document.getElementById("customMin").value)||0;
   const sec = parseInt(document.getElementById("customSec").value)||0;
-  timerRemaining = min*60+sec; updateTimerDisplay();
+  timerRemaining = min*60+sec; timerInitialSeconds = timerRemaining || 1; updateTimerDisplay();
+}
+function adjustTimer(deltaSeconds){
+  if(timerMode!=="countdown") return;
+  timerRemaining = Math.max(0, timerRemaining + deltaSeconds);
+  if(timerRemaining > timerInitialSeconds) timerInitialSeconds = timerRemaining;
+  // reflejar el cambio también en los campos de min/seg para que quede consistente
+  const min = Math.floor(timerRemaining/60), sec = timerRemaining%60;
+  const minInput = document.getElementById("customMin"), secInput = document.getElementById("customSec");
+  if(minInput) minInput.value = min;
+  if(secInput) secInput.value = sec;
+  updateTimerDisplay();
 }
 function startTimer(){
   if(timerRunning) return;
+  if(timerMode==="countdown" && timerRemaining<=0) return;
   timerRunning=true;
   timerInterval = setInterval(()=>{
     if(timerMode==="countdown"){
@@ -1399,7 +1629,7 @@ function startTimer(){
 function pauseTimer(){ timerRunning=false; clearInterval(timerInterval); updateTimerDisplay(); }
 function resetTimer(){
   pauseTimer();
-  if(timerMode==="countdown"){ timerRemaining = timerRemaining>0?timerRemaining: 60; }
+  if(timerMode==="countdown"){ timerRemaining = timerInitialSeconds>0?timerInitialSeconds:60; }
   timerElapsed=0;
   updateTimerDisplay();
 }
