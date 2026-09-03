@@ -240,6 +240,23 @@ video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:
 .custom-time{display:flex;justify-content:center;gap:8px;align-items:center;margin:14px 0}
 .custom-time input{width:70px;padding:8px;border-radius:10px;border:1px solid var(--line);background:#100e24;color:var(--text);text-align:center;font-size:16px}
 
+/* ===== INICIO DE CLASE ===== */
+.start-wrap{text-align:center;padding:10px 0}
+.start-title{font-family:"Fredoka",-apple-system,sans-serif;font-size:28px;margin:0 0 4px;
+  background:linear-gradient(135deg,#22d3ee,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent}
+.start-sub{color:var(--muted);font-size:13px;margin-bottom:26px}
+.start-steps{display:flex;align-items:flex-start;justify-content:center;gap:0;margin-bottom:18px}
+.start-step{display:flex;flex-direction:column;align-items:center;gap:8px}
+.step-circle{width:52px;height:52px;border-radius:50%;background:#100e24;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:19px;color:var(--muted);transition:.3s}
+.start-step.active .step-circle{background:linear-gradient(135deg,#22d3ee,#7c3aed);color:#08081a;border-color:transparent;box-shadow:0 0 22px #22d3eecc;animation:pulse .8s infinite}
+.start-step.done .step-circle{background:linear-gradient(135deg,#8ce99a,#22c55e);color:#08081a;border-color:transparent;box-shadow:0 0 18px #22c55ecc}
+.step-label{font-size:11px;color:var(--muted);font-weight:800;max-width:96px;line-height:1.3}
+.start-line{width:80px;height:3px;background:var(--line);margin:24px 10px 0;border-radius:2px;position:relative;overflow:hidden}
+.start-line::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#8ce99a,#22c55e);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.start-line.done::after{transform:scaleX(1)}
+.start-phase-label{font-size:17px;font-weight:800;margin-bottom:4px;min-height:26px}
+.start-phase-label.done-msg{background:linear-gradient(135deg,#8ce99a,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
+
 /* modal */
 .modal-bg{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
 .modal-bg.show{display:flex}
@@ -317,10 +334,43 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
 
   <nav class="tabs">
     <button data-tab="marcador" class="active">📊 Marcador</button>
+    <button data-tab="inicio">🔔 Inicio de Clase</button>
     <button data-tab="podio">🥇 Podio</button>
     <button data-tab="calendario">📅 Calendario</button>
     <button data-tab="timer">⏱️ Timer</button>
   </nav>
+
+  <!-- INICIO DE CLASE -->
+  <section id="tab-inicio" class="section">
+    <div class="card start-wrap">
+      <h2 class="start-title">🔔 START OF CLASS</h2>
+      <p class="start-sub">Press Start and follow the steps together as a class.</p>
+
+      <div class="start-steps">
+        <div class="start-step" id="startStep1">
+          <div class="step-circle" id="stepCircle1">1</div>
+          <div class="step-label">📦 Materials Out</div>
+        </div>
+        <div class="start-line" id="startLine"></div>
+        <div class="start-step" id="startStep2">
+          <div class="step-circle" id="stepCircle2">2</div>
+          <div class="step-label">🪑 Sit &amp; Ready</div>
+        </div>
+      </div>
+
+      <div class="start-phase-label" id="startPhaseLabel">Press Start to begin</div>
+      <div class="timer-display" id="startDisplay">01:00</div>
+      <div class="timer-progress-wrap" id="startProgressWrap">
+        <div class="timer-progress-bar" id="startProgressBar"></div>
+      </div>
+
+      <div class="timer-controls" style="margin-top:20px">
+        <button class="btn btn-primary" id="startRoutineBtn" onclick="startClassRoutine()">▶ Start</button>
+        <button class="btn btn-ghost" onclick="resetClassRoutine()">⟲ Reset</button>
+        <button class="btn btn-ghost" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+      </div>
+    </div>
+  </section>
 
   <!-- MARCADOR -->
   <section id="tab-marcador" class="section active">
@@ -1054,6 +1104,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   document.getElementById("claseFecha").addEventListener("change", onDateOrBloqueChange);
   document.getElementById("claseBloque").addEventListener("change", onDateOrBloqueChange);
   initTimerUI();
+  initClassStartUI();
   resizeConfetti();
   setSyncBadge(false);
   initAuthGate(); // esta función llama a bootWorkspace() -> loadState()/buildClassbar()/renderAll() una vez resuelto quién inició sesión
@@ -1360,122 +1411,122 @@ const FACT_CATS = {
   plants:   {emoji:"🌱", c1:"#84cc16", c2:"#a3e635"},
 };
 const FACTS_RAW = [
-["animals","Giraffe Necks","A giraffe's neck is very long, but it has only seven neck bones — the same number as a human!"],
-["animals","Octopus Hearts","An octopus has three hearts and blue blood."],
-["animals","Sleepy Koalas","Koalas sleep for about 20 hours every day."],
-["animals","Bee Dance","Honey bees dance to tell other bees where to find flowers."],
-["animals","Elephant Memory","Elephants can remember other elephants for many years."],
-["animals","Cat Naps","Cats sleep for about 15 hours a day."],
-["animals","Penguin Parents","Some penguin dads keep the egg warm for two months without eating."],
-["animals","Chameleon Colors","Chameleons change color to hide or to show their feelings."],
-["animals","Dolphin Names","Dolphins can call each other with special sounds, like names."],
-["animals","Owl Necks","Owls can turn their heads almost all the way around."],
-["animals","Ant Strength","An ant can carry things that are 50 times heavier than its body."],
-["animals","Butterfly Taste","Butterflies taste food with their feet."],
-["animals","Snail Sleep","A snail can sleep for three years."],
-["animals","Kangaroo Jumps","Kangaroos cannot walk backward."],
-["animals","Flamingo Color","Flamingos are pink because of the food they eat."],
-["animals","Whale Songs","Whales sing songs that can travel for many kilometers under the water."],
-["animals","Spider Webs","Spider silk is stronger than steel of the same size."],
-["animals","Tiger Stripes","No two tigers have the same pattern of stripes."],
-["space","Sun Size","The Sun is so big that one million Earths could fit inside it."],
-["space","Moon Walk","Twelve people have walked on the Moon."],
-["space","Saturn Rings","Saturn's rings are made mostly of ice and rock."],
-["space","Venus Day","A day on Venus is longer than a year on Venus."],
-["space","Mars Color","Mars looks red because of rust in its soil."],
-["space","Old Starlight","Some stars we see in the sky are already gone."],
-["space","Black Holes","A black hole's gravity is so strong that even light cannot escape."],
-["space","Space Silence","There is no sound in space because there is no air."],
-["space","Milky Way","Our galaxy is called the Milky Way, and it has billions of stars."],
-["space","Jupiter Storm","Jupiter has a giant storm bigger than Earth called the Great Red Spot."],
-["space","Astronaut Height","Astronauts can grow a few centimeters taller in space."],
-["space","Mercury Temperature","Mercury is very hot in the day and very cold at night."],
-["space","Shooting Stars","A shooting star is not a star — it is a small rock burning in the sky."],
-["space","Space Suits","A space suit protects astronauts and lets them breathe in space."],
-["ocean","Deepest Point","The deepest part of the ocean is called the Mariana Trench."],
-["ocean","Blue Whale","The blue whale is the biggest animal that has ever lived on Earth."],
-["ocean","Coral Reefs","Coral reefs are home to thousands of different sea animals."],
-["ocean","Ocean Size","The ocean covers more than 70% of the Earth's surface."],
-["ocean","Old Jellyfish","Jellyfish have been in the ocean for more than 500 million years."],
-["ocean","Seahorse Dads","Male seahorses carry the babies, not the females."],
-["ocean","Starfish Arms","A starfish can grow a new arm if it loses one."],
-["ocean","Shark Teeth","Sharks can lose thousands of teeth in their life and grow new ones."],
-["ocean","Sea Otter Hands","Sea otters hold hands while they sleep so they don't float apart."],
-["ocean","Unexplored Ocean","We have explored less than 20% of the ocean."],
-["ocean","Clownfish Homes","Clownfish live safely inside sea anemones."],
-["ocean","Giant Squid Eyes","The giant squid has the biggest eyes in the animal world."],
-["ocean","Ocean Waves","Wind makes most of the waves we see on the ocean."],
-["ocean","Turtle Journeys","Sea turtles can swim thousands of kilometers to lay their eggs."],
-["body","Heartbeats","Your heart beats about 100,000 times every day."],
-["body","Bone Count","Babies are born with about 300 bones, but adults have only 206."],
-["body","Brain Power","Your brain uses about 20% of your body's energy."],
-["body","Skin Layer","Your skin is the biggest organ in your body."],
-["body","Sneeze Speed","A sneeze can leave your body at a very high speed."],
-["body","Nose Memory","Your nose can remember thousands of different smells."],
-["body","Blinking Eyes","You blink your eyes about 15 times every minute."],
-["body","Taste Buds","You have about 10,000 taste buds on your tongue."],
-["body","Growing Hair","Hair grows faster in summer than in winter."],
-["body","Body Water","More than half of your body is made of water."],
-["body","Fingerprints","No two people in the world have the same fingerprints."],
-["body","Yawning","Yawning can help cool down your brain."],
-["body","Laughing Muscles","You use many muscles in your face when you laugh."],
-["body","Sleep Time","Most people spend about one third of their life sleeping."],
-["geo","Tallest Mountain","Mount Everest is the tallest mountain above sea level."],
-["geo","Longest River","The Nile is one of the longest rivers in the world."],
-["geo","Biggest Desert","The biggest hot desert in the world is the Sahara, in Africa."],
-["geo","Smallest Country","Vatican City is the smallest country in the world."],
-["geo","Coldest Place","Antarctica is the coldest continent on Earth."],
-["geo","Biggest Ocean","The Pacific Ocean is the largest ocean on Earth."],
-["geo","Ring of Fire","Many earthquakes happen around the Pacific Ocean, in an area called the Ring of Fire."],
-["geo","Amazon Oxygen","The Amazon rainforest makes a lot of the world's oxygen."],
-["geo","Great Wall","The Great Wall of China is thousands of kilometers long."],
-["geo","Iceland's Name","Iceland has a lot of green land, and Greenland has a lot of ice."],
-["geo","Highest Waterfall","Angel Falls, in Venezuela, is the tallest waterfall in the world."],
-["geo","Seven Continents","There are seven continents on Earth."],
-["geo","Dead Sea Floating","You can float easily in the Dead Sea because the water is very salty."],
-["geo","Time Zones","The Earth is divided into 24 time zones."],
-["inventions","First Telephone","Alexander Graham Bell invented the telephone in 1876."],
-["inventions","Light Bulb","Thomas Edison helped make the electric light bulb popular."],
-["inventions","Internet Start","The internet started as a small network for scientists."],
-["inventions","First Airplane","The Wright brothers flew the first airplane in 1903."],
-["inventions","Printing Press","The printing press helped people share books and ideas faster."],
-["inventions","The Wheel","The wheel is one of the oldest and most important inventions."],
-["inventions","Early Cameras","Early cameras needed many minutes to take just one photo."],
-["inventions","First Computers","The first computers were as big as a whole room."],
-["inventions","Old Umbrellas","People have used umbrellas for more than 3,000 years."],
-["inventions","Velcro Idea","Velcro was invented after a man studied how seeds stick to clothes."],
-["inventions","The Zipper","The zipper took many years and many tries to become popular."],
-["inventions","First Chocolate Bar","The first chocolate bar was made in the 1800s."],
-["food","Honey Never Spoils","Honey can stay good to eat for thousands of years."],
-["food","Floating Apples","Apples float in water because they are 25% air."],
-["food","Banana Family","Bananas are berries, but strawberries are not."],
-["food","Carrot Colors","Carrots were originally purple, not orange."],
-["food","Chocolate Origin","Chocolate comes from the seeds of the cacao tree."],
-["food","Pizza History","Pizza started in Naples, Italy, hundreds of years ago."],
-["food","Rice Staple","Rice is a main food for more than half of the people in the world."],
-["food","Tomato Fruit","A tomato is a fruit, but we usually cook it like a vegetable."],
-["food","Old Popcorn","People have eaten popcorn for thousands of years."],
-["food","Tea Popularity","Tea is one of the most popular drinks in the world, after water."],
-["weather","Lightning Heat","For a moment, lightning is hotter than the surface of the Sun."],
-["weather","Snowflake Shapes","No two snowflakes look exactly the same."],
-["weather","Rainbow Colors","A rainbow has seven main colors."],
-["weather","What Makes Wind","Wind happens when air moves from high pressure to low pressure."],
-["weather","Cloud Types","Clouds have different names depending on their shape and height."],
-["weather","Hurricane Names","Hurricanes get names to make them easier to talk about."],
-["weather","Fog Formation","Fog is a cloud that touches the ground."],
-["weather","Thunder Sound","Thunder happens because lightning heats the air very fast."],
-["weather","Dry Deserts","Some deserts can go years without any rain."],
-["weather","The Ice Age","During the Ice Age, much of the Earth was covered in ice."],
-["plants","Oldest Trees","Some trees are more than 4,000 years old."],
-["plants","Sunflower Movement","Young sunflowers turn to follow the Sun during the day."],
-["plants","Fast Bamboo","Bamboo can grow very fast, even one meter in a single day."],
-["plants","Venus Flytrap","The Venus flytrap is a plant that eats small insects."],
-["plants","Tree Oxygen","One big tree can produce enough oxygen for two people."],
-["plants","Cactus Water","Cactus plants can store water for a very long time."],
-["plants","Traveling Seeds","Some seeds can travel far by flying in the wind."],
-["plants","Rainforest Plants","Rainforests have more plant species than any other place on Earth."],
-["plants","Flower Colors","Flowers use bright colors to attract bees and other insects."],
-["plants","Deep Roots","Some plant roots can grow deeper than the plant is tall."],
+["animals","Giraffe Necks","A giraffe's neck is very long, but it has only seven neck bones — the same number as a human! Giraffes use their long necks to eat leaves at the top of tall trees. Their necks can be over two meters long. A giraffe's heart is also very big and strong. It needs a strong heart to send blood all the way up to its head. Giraffes usually sleep for less than two hours a day."],
+["animals","Octopus Hearts","An octopus has three hearts and blue blood. Two hearts pump blood to the gills, and one heart pumps blood to the rest of the body. Octopus blood is blue because it has copper in it, not iron like human blood. Octopuses are also very smart animals. They can open jars and solve simple puzzles. Some octopuses can even change the color and texture of their skin in less than a second."],
+["animals","Sleepy Koalas","Koalas sleep for about 20 hours every day. They eat eucalyptus leaves, which do not give them much energy. This is one reason why koalas move very slowly. Eucalyptus leaves can also be a little toxic, so koalas have a special stomach to break them down safely. When koalas are awake, they spend most of their time eating. Baby koalas are called joeys, just like baby kangaroos."],
+["animals","Bee Dance","Honey bees dance to tell other bees where to find flowers. This is called the 'waggle dance'. The bee moves in a special pattern to show the direction and distance to the food. Other bees watch the dance carefully and then fly to the same place. Bees also use smell to find flowers. A bee hive can have thousands of bees working together every day."],
+["animals","Elephant Memory","Elephants can remember other elephants for many years. They can also remember paths to water, even during a drought. Elephants live in family groups led by an older female called the matriarch. She uses her memory to guide the group to food and water. Elephants also show emotions like joy and sadness. They sometimes touch the bones of elephants that have died, almost like they are saying goodbye."],
+["animals","Cat Naps","Cats sleep for about 15 hours a day. Some cats sleep even more, up to 20 hours! Cats are most active at dawn and dusk, which are the times their wild ancestors used to hunt. Even while sleeping, a cat's ears can still hear sounds around it. Cats also dream, just like humans do. Short cat naps help them save energy for playing and hunting."],
+["animals","Penguin Parents","Some penguin dads keep the egg warm for two months without eating. This happens with emperor penguins in Antarctica. The father balances the egg on his feet to keep it off the cold ice. He uses a warm layer of skin called a brood pouch to cover the egg. During this time, the mother goes to the ocean to find food. When the chick hatches, both parents take turns caring for it."],
+["animals","Chameleon Colors","Chameleons change color to hide or to show their feelings. They do not only change color to match their background. Bright colors can mean a chameleon is excited or angry. Chameleons also have eyes that can move in two different directions at the same time. This helps them look for food and danger at once. Their long, sticky tongues can catch insects very quickly."],
+["animals","Dolphin Names","Dolphins can call each other with special sounds, like names. Scientists call these sounds 'signature whistles'. Each dolphin has its own unique whistle. Dolphins use these whistles to find friends and family in the ocean. They also use clicks and sounds to find food using echolocation. Dolphins are very social animals and often travel in groups called pods."],
+["animals","Owl Necks","Owls can turn their heads almost all the way around. They can rotate their necks about 270 degrees. Owls have this ability because their eyes cannot move much in their sockets. Turning their heads helps them see in almost every direction. Owls also have amazing hearing, which helps them hunt at night. Their soft feathers let them fly without making much noise."],
+["animals","Ant Strength","An ant can carry things that are 50 times heavier than its body. This would be like a person lifting a car! Ants are very strong because of their small size and body structure. They also work together as a team to move bigger objects. Ants use their antennae to smell and to talk to other ants. A single ant colony can have thousands, or even millions, of ants."],
+["animals","Butterfly Taste","Butterflies taste food with their feet. When a butterfly lands on a flower, it can taste the sugar right away. This helps them decide quickly if the flower has good food. Butterflies drink nectar using a long tube called a proboscis. Before they become butterflies, they are caterpillars that eat leaves. This whole change is called metamorphosis."],
+["animals","Snail Sleep","A snail can sleep for three years. This usually happens when the weather is too dry or too cold. During this long sleep, snails make a thin layer to protect their body. This helps them survive without food or water for a long time. Snails also carry their home, the shell, everywhere they go. Some snails can live for many years in the wild."],
+["animals","Kangaroo Jumps","Kangaroos cannot walk backward. Their strong back legs and big tail are made for jumping forward. A kangaroo can jump more than three meters in one hop. Their tail helps them balance while jumping and even while standing still. Baby kangaroos, called joeys, live in their mother's pouch. Kangaroos are found mostly in Australia."],
+["animals","Flamingo Color","Flamingos are pink because of the food they eat. They eat small shrimp and algae that contain a pink-orange pigment. Over time, this pigment changes the color of their feathers. Baby flamingos are actually born gray or white. Flamingos also stand on one leg to save body heat. They often live in large groups near lakes."],
+["animals","Whale Songs","Whales sing songs that can travel for many kilometers under the water. Male humpback whales are famous for their long, beautiful songs. Scientists think whales sing to talk to other whales or to find a partner. Whale songs can change slowly over many years. Whales are also some of the biggest animals on Earth. They breathe air, just like humans, even though they live in water."],
+["animals","Spider Webs","Spider silk is stronger than steel of the same size. Spiders use silk to build webs, to catch food, and even to travel through the air. Some spiders can make several different types of silk. A spider web can be rebuilt in less than an hour. Not all spiders build webs to catch food; some hunt instead. Spiders help control the number of insects around us."],
+["animals","Tiger Stripes","No two tigers have the same pattern of stripes. Just like human fingerprints, each tiger's stripes are unique. Tiger stripes also grow on their skin, not only on their fur. This means if you shaved a tiger, it would still have stripes! Tigers are excellent swimmers, unlike most cats. They are also the largest wild cats in the world."],
+["space","Sun Size","The Sun is so big that one million Earths could fit inside it. It is the closest star to our planet. The Sun is made mostly of hydrogen and helium gas. Without the Sun's light and heat, life on Earth could not exist. Light from the Sun takes about eight minutes to reach us. The Sun also gives us energy that plants use to grow."],
+["space","Moon Walk","Twelve people have walked on the Moon. All of them were part of the American Apollo missions. The first Moon walk happened in 1969, with astronaut Neil Armstrong. The Moon has much less gravity than Earth, so astronauts could jump very high. There is no air on the Moon, so astronauts had to wear special suits. Footprints on the Moon can stay there for millions of years because there is no wind."],
+["space","Saturn Rings","Saturn's rings are made mostly of ice and rock. Some pieces are as small as dust, and others are as big as mountains. The rings are very wide, but actually quite thin. Saturn is the second largest planet in our solar system. It also has more than 80 known moons. Saturn is so light that it could almost float in water, if there was an ocean big enough!"],
+["space","Venus Day","A day on Venus is longer than a year on Venus. This is because Venus spins very slowly on its axis. But it travels around the Sun faster than it spins. Venus is also the hottest planet in our solar system. Thick clouds trap heat close to the surface. Venus is sometimes called Earth's twin because it is a similar size."],
+["space","Mars Color","Mars looks red because of rust in its soil. This rust comes from iron minerals in the ground. Mars is often called the Red Planet. It has the tallest volcano in the solar system, called Olympus Mons. Scientists have sent many robots to explore Mars. They are looking for signs that water, or even life, once existed there."],
+["space","Old Starlight","Some stars we see in the sky are already gone. This is because their light takes so long to travel to Earth. When we look at a star, we are actually looking into the past. Stars are born, live for a long time, and eventually die. Some stars explode in a huge event called a supernova. On a clear night, you can see thousands of stars without a telescope."],
+["space","Black Holes","A black hole's gravity is so strong that even light cannot escape. This is why we cannot see black holes directly. Black holes form when a very big star collapses. They can be millions of times heavier than our Sun. Scientists study black holes using special telescopes and math. There is a huge black hole at the center of our galaxy."],
+["space","Space Silence","There is no sound in space because there is no air. Sound needs something to travel through, like air or water. This means astronauts cannot hear explosions or engines outside their spacecraft. They talk to each other using radios instead. Space is also extremely cold and mostly empty. It is one of the strangest and quietest places we know."],
+["space","Milky Way","Our galaxy is called the Milky Way, and it has billions of stars. Our solar system is just a tiny part of it. The Milky Way is shaped like a big spiral, similar to a pinwheel. It takes our Sun about 230 million years to travel around the galaxy once. On a very dark night, you can see part of the Milky Way as a bright band in the sky. Scientists believe there are billions of other galaxies in the universe."],
+["space","Jupiter Storm","Jupiter has a giant storm bigger than Earth called the Great Red Spot. This storm has been happening for hundreds of years. Jupiter is the biggest planet in our solar system. It is made mostly of gas, with no solid surface to stand on. Jupiter also has more than 90 moons. Its strong gravity helps protect Earth by pulling in some space rocks."],
+["space","Astronaut Height","Astronauts can grow a few centimeters taller in space. This happens because there is very little gravity to pull on their spine. Without gravity pressing down, the bones in the back can stretch out slightly. When astronauts return to Earth, they slowly go back to their normal height. Living in space can also make muscles and bones weaker. That is why astronauts exercise every day on the space station."],
+["space","Mercury Temperature","Mercury is very hot in the day and very cold at night. Daytime temperatures can be extremely high, but nights are freezing cold. This happens because Mercury has almost no atmosphere to trap heat. Mercury is also the smallest planet in our solar system. It is the closest planet to the Sun. A year on Mercury is much shorter than a year on Earth."],
+["space","Shooting Stars","A shooting star is not a star — it is a small rock burning in the sky. These rocks are called meteors, and they come from space. When a meteor enters Earth's atmosphere, it burns up and creates a bright streak of light. Most meteors are very small, about the size of a grain of sand. Sometimes many meteors appear together, called a meteor shower. People often make a wish when they see one!"],
+["space","Space Suits","A space suit protects astronauts and lets them breathe in space. It gives them oxygen and keeps their body at a safe temperature. Space suits are also very heavy, but they feel lighter in space because of low gravity. They protect astronauts from dangerous space rocks and strong sunlight. Putting on a full space suit can take a long time. Astronauts practice wearing their suits before every spacewalk."],
+["ocean","Deepest Point","The deepest part of the ocean is called the Mariana Trench. It is located in the Pacific Ocean. The trench is deeper than Mount Everest is tall. Very few people have ever traveled to the bottom of it. The water pressure there is extremely strong. Strange and unique creatures live in this dark, cold part of the ocean."],
+["ocean","Blue Whale","The blue whale is the biggest animal that has ever lived on Earth. It can be longer than a basketball court. A blue whale's heart alone can weigh as much as a small car. These huge animals eat tiny creatures called krill. They can eat several tons of krill every day. Blue whales are found in oceans all around the world."],
+["ocean","Coral Reefs","Coral reefs are home to thousands of different sea animals. They are sometimes called the 'rainforests of the sea'. Coral reefs are made by tiny living creatures called coral polyps. These reefs grow very slowly over hundreds of years. Warmer ocean water can damage and even kill coral reefs. Protecting coral reefs helps protect many other sea animals too."],
+["ocean","Ocean Size","The ocean covers more than 70% of the Earth's surface. It holds most of the water on our planet. The ocean is divided into five main parts, like the Pacific and the Atlantic. Ocean water is salty, unlike the water in most rivers and lakes. The ocean also produces a large part of the oxygen we breathe. Millions of species live in the ocean, and many are still unknown to us."],
+["ocean","Old Jellyfish","Jellyfish have been in the ocean for more than 500 million years. This means they lived on Earth before the dinosaurs. Jellyfish do not have a brain, a heart, or bones. Most of their body is made of water. Some jellyfish can glow in the dark. They move by pushing water out of their bodies."],
+["ocean","Seahorse Dads","Male seahorses carry the babies, not the females. The female puts her eggs into a special pouch on the male's body. The male then carries and protects the eggs until they hatch. Seahorses are not strong swimmers, so they often hold onto plants with their tails. They also change color to hide from danger. Seahorses eat small shrimp and other tiny sea creatures."],
+["ocean","Starfish Arms","A starfish can grow a new arm if it loses one. Some starfish can even grow a whole new body from just one arm. Starfish do not have a brain like humans do. Instead, they have a simple nervous system that helps them sense their surroundings. Most starfish have five arms, but some have many more. They move slowly using hundreds of tiny tube feet."],
+["ocean","Shark Teeth","Sharks can lose thousands of teeth in their life and grow new ones. Their teeth are always being replaced, one row after another. Sharks have been in the ocean for hundreds of millions of years. Most sharks are not dangerous to humans. Sharks are important because they help keep the ocean healthy. Without sharks, other sea animal populations could grow too large."],
+["ocean","Sea Otter Hands","Sea otters hold hands while they sleep so they don't float apart. Groups of sea otters resting together are called 'rafts'. Sea otters also wrap themselves in seaweed to stay in one place. They use rocks as tools to open shellfish for food. Sea otters have very thick fur to stay warm in cold water. They spend most of their lives in the ocean."],
+["ocean","Unexplored Ocean","We have explored less than 20% of the ocean. This means most of the ocean is still a mystery. Scientists use special submarines to study the deep sea. New species are discovered in the ocean every year. The ocean floor has mountains, valleys, and volcanoes, just like on land. There is still so much to learn about life under the water."],
+["ocean","Clownfish Homes","Clownfish live safely inside sea anemones. Anemones have a sting that can hurt other fish, but clownfish are protected by a special mucus on their skin. In return, clownfish help clean and protect the anemone. This is a great example of two animals helping each other. Clownfish are usually orange with white stripes. They live in warm ocean waters near coral reefs."],
+["ocean","Giant Squid Eyes","The giant squid has the biggest eyes in the animal world. Its eyes can be as big as a basketball. These huge eyes help the giant squid see in the dark, deep ocean. Giant squids live very deep in the water, so people rarely see them. They can grow to be extremely long. Scientists are still learning many things about how giant squids live."],
+["ocean","Ocean Waves","Wind makes most of the waves we see on the ocean. Stronger winds usually create bigger waves. Ocean currents also move huge amounts of water around the world. These currents can affect the weather in different countries. Tides happen because of the pull of the Moon's gravity. Waves and tides both play an important role in ocean life."],
+["ocean","Turtle Journeys","Sea turtles can swim thousands of kilometers to lay their eggs. Many turtles return to the exact same beach where they were born. Baby sea turtles hatch from eggs buried in the sand. They then crawl to the ocean, often at night. Sea turtles can live for many decades. Some species of sea turtles are endangered and need our protection."],
+["body","Heartbeats","Your heart beats about 100,000 times every day. It pumps blood full of oxygen to every part of your body. Your heart is a strong muscle about the size of your fist. It never stops working, even while you sleep. Exercise can help make your heart stronger. A healthy heart is important for a healthy life."],
+["body","Bone Count","Babies are born with about 300 bones, but adults have only 206. Some of these bones join together as a person grows. Bones give your body its shape and help you move. They also protect important organs, like your brain and heart. Bones are stronger than you might think, but they can still break. Eating healthy food helps keep your bones strong."],
+["body","Brain Power","Your brain uses about 20% of your body's energy. This is a lot, considering the brain is a small part of your body. The brain controls almost everything you do, like thinking, moving, and feeling. It sends messages to your body through nerves. Your brain also stores memories from your whole life. Sleeping well helps your brain work better."],
+["body","Skin Layer","Your skin is the biggest organ in your body. It protects you from germs, sun, and injury. Skin also helps control your body temperature. It can feel things like heat, cold, and pain. Your skin is always making new cells to replace old ones. Taking care of your skin helps keep your whole body healthy."],
+["body","Sneeze Speed","A sneeze can leave your body at a very high speed. Sneezing is your body's way of removing things that irritate your nose. It happens very quickly and cannot usually be stopped once it starts. Covering your mouth when you sneeze helps stop germs from spreading. Some people sneeze when they look at bright light. Sneezing is a normal and healthy reflex."],
+["body","Nose Memory","Your nose can remember thousands of different smells. Smell is closely connected to memory in your brain. This is why a smell can suddenly remind you of an old memory. Your nose also helps you taste food. Without your sense of smell, food would taste much less interesting. Some smells can even warn you of danger, like smoke or gas."],
+["body","Blinking Eyes","You blink your eyes about 15 times every minute. Blinking keeps your eyes clean and wet. It only takes a fraction of a second each time. Your eyes also have muscles that help you focus on things near and far. Eyes can see millions of different colors. Taking breaks from screens helps keep your eyes healthy."],
+["body","Taste Buds","You have about 10,000 taste buds on your tongue. They help you taste sweet, sour, salty, bitter, and savory flavors. Taste buds are replaced every couple of weeks. Your sense of smell also affects how food tastes. This is why food can taste different when you have a cold. Trying new foods can help you enjoy more flavors."],
+["body","Growing Hair","Hair grows faster in summer than in winter. On average, hair grows about one centimeter every month. Each hair grows from a small part of the skin called a follicle. Hair helps protect your skin and keep your head warm. Cutting your hair does not make it grow faster. Hair color and type depend mostly on genetics."],
+["body","Body Water","More than half of your body is made of water. Water helps your body in many important ways, like moving nutrients and controlling temperature. Drinking enough water every day keeps your body working well. You lose water through sweat, breathing, and using the bathroom. That is why it is important to drink water often. Some fruits and vegetables also contain a lot of water."],
+["body","Fingerprints","No two people in the world have the same fingerprints. Not even identical twins have the same pattern. Fingerprints form before a baby is even born. They help people grip objects better. Police sometimes use fingerprints to identify people. Your fingerprints stay the same your whole life."],
+["body","Yawning","Yawning can help cool down your brain. It also brings more oxygen into your body. Yawning is contagious — seeing someone yawn can make you yawn too! People usually yawn when they are tired or bored. Even babies yawn before they are born. Scientists are still studying exactly why we yawn."],
+["body","Laughing Muscles","You use many muscles in your face when you laugh. Laughing can also be good for your health. It can help lower stress and make you feel happier. Laughing sometimes makes it hard to breathe normally for a moment. Babies usually start laughing at a few months old. Laughter is a way people connect with each other all around the world."],
+["body","Sleep Time","Most people spend about one third of their life sleeping. Sleep helps your body and brain rest and repair. Children usually need more sleep than adults. While you sleep, your brain organizes memories from the day. Not getting enough sleep can make it hard to think clearly. Having a regular sleep schedule can help you feel more energetic."],
+["geo","Tallest Mountain","Mount Everest is the tallest mountain above sea level. It is located in the Himalayas, between Nepal and Tibet. The top of Everest is extremely cold and has very little oxygen. Many climbers try to reach the top every year. It takes weeks of preparation to climb Everest safely. The mountain is still slowly growing taller every year."],
+["geo","Longest River","The Nile is one of the longest rivers in the world. It flows through several countries in Africa. Ancient Egyptian civilization grew along the banks of the Nile. The river provided water for farming in the desert. Many people still depend on the Nile River today. Rivers like the Nile are important for both nature and people."],
+["geo","Biggest Desert","The biggest hot desert in the world is the Sahara, in Africa. It covers a huge part of northern Africa. Deserts are not always sandy; some have rocks or gravel instead. The Sahara can be extremely hot during the day and cold at night. Very few plants and animals can survive there. Some people have lived in the Sahara desert for thousands of years."],
+["geo","Smallest Country","Vatican City is the smallest country in the world. It is located inside the city of Rome, in Italy. Even though it is small, it has its own government and flag. Vatican City is home to famous art and historic buildings. Many tourists visit it every year. Its small size makes it very different from most other countries."],
+["geo","Coldest Place","Antarctica is the coldest continent on Earth. Almost all of it is covered in thick ice. Very few animals can survive there, like penguins and seals. Scientists from many countries study Antarctica's weather and wildlife. There are no permanent human residents, only research stations. Antarctica holds most of the world's fresh water, frozen as ice."],
+["geo","Biggest Ocean","The Pacific Ocean is the largest ocean on Earth. It is bigger than all of the continents put together. The Pacific Ocean touches many countries around its edges. It also contains the deepest point in any ocean. Thousands of islands are found in the Pacific. Many different sea animals live in its waters."],
+["geo","Ring of Fire","Many earthquakes happen around the Pacific Ocean, in an area called the Ring of Fire. This area also has many active volcanoes. It forms a large circle around the edge of the Pacific. Countries like Japan, Chile, and Indonesia are part of this zone. Scientists study the Ring of Fire to help predict natural disasters. It is one of the most active areas on our planet."],
+["geo","Amazon Oxygen","The Amazon rainforest makes a lot of the world's oxygen. It is the largest rainforest on Earth. The Amazon is home to millions of different plants and animals. Many of these species have not even been discovered yet. The Amazon River flows through this huge forest. Protecting the rainforest helps protect the health of our whole planet."],
+["geo","Great Wall","The Great Wall of China is thousands of kilometers long. It was built over many centuries by different Chinese dynasties. The wall was made to protect against invasions. It goes across mountains, deserts, and grasslands. Millions of people visit the Great Wall every year. Some people believed it could be seen from space, but that is actually not true."],
+["geo","Iceland's Name","Iceland has a lot of green land, and Greenland has a lot of ice. Their names can be a little confusing! Iceland has volcanoes, hot springs, and beautiful waterfalls. Greenland is the biggest island in the world, and most of it is covered in ice. Both countries are located near the Arctic. They both have small populations compared to their land size."],
+["geo","Highest Waterfall","Angel Falls, in Venezuela, is the tallest waterfall in the world. The water falls from a very high, flat mountain called a tepui. It is so tall that some of the water turns into mist before reaching the ground. Angel Falls is located inside a national park in the rainforest. It is named after a pilot who flew over it many years ago. Many travelers visit it to see its incredible height."],
+["geo","Seven Continents","There are seven continents on Earth. They are Africa, Antarctica, Asia, Australia, Europe, North America, and South America. Each continent has its own unique animals, plants, and cultures. Asia is the largest continent by both size and population. Australia is the smallest continent, but also a whole country. Learning about continents helps us understand our world better."],
+["geo","Dead Sea Floating","You can float easily in the Dead Sea because the water is very salty. The high salt makes the water denser, so bodies float more easily. The Dead Sea is located between Israel and Jordan. It is actually a lake, not a real sea. Very few living things can survive in its salty water. Many people visit to float and relax in its unique water."],
+["geo","Time Zones","The Earth is divided into 24 time zones. This helps different parts of the world keep time based on the position of the Sun. When it is morning in one country, it can be night in another. Time zones were created to help with travel and communication. Some very large countries have several time zones. Understanding time zones is important when talking to people around the world."],
+["inventions","First Telephone","Alexander Graham Bell invented the telephone in 1876. Before this invention, people could only send messages by letter or telegraph. The telephone let people talk to each other from far away for the first time. Early telephones were very different from the phones we use today. Over time, telephones became smaller and easier to use. Today, most people carry a phone with them everywhere."],
+["inventions","Light Bulb","Thomas Edison helped make the electric light bulb popular. He tested many different materials before finding one that worked well. Before light bulbs, people used candles or oil lamps for light. Electric light changed how people lived and worked at night. Cities slowly began adding electric street lights. Today, light bulbs are found in almost every home in the world."],
+["inventions","Internet Start","The internet started as a small network for scientists. It was first used to share information between universities and research centers. Over time, more computers joined the network, and it kept growing. In the 1990s, the internet became available to regular people. Today, billions of people use the internet every day. It has changed how we learn, work, and communicate."],
+["inventions","First Airplane","The Wright brothers flew the first airplane in 1903. Their flight lasted only a few seconds, but it changed history. Before this, many people believed humans could never fly. The Wright brothers tested many designs before their first successful flight. Airplanes today can fly much faster and farther. Air travel now connects people all around the world."],
+["inventions","Printing Press","The printing press helped people share books and ideas faster. It was made popular by Johannes Gutenberg in the 1400s. Before the printing press, books had to be copied by hand. This made books expensive and rare. The printing press made it possible to make many copies quickly. This helped more people learn to read."],
+["inventions","The Wheel","The wheel is one of the oldest and most important inventions. It was invented thousands of years ago. Wheels made it much easier to move heavy things from place to place. They are used in cars, bicycles, and many machines today. Without the wheel, transportation would look very different. Simple inventions like this can change the whole world."],
+["inventions","Early Cameras","Early cameras needed many minutes to take just one photo. People had to sit very still so the picture would not be blurry. Modern cameras can take a photo in a fraction of a second. Cameras have changed a lot since they were first invented. Today, many people carry a camera inside their phone. Photos help us remember important moments in life."],
+["inventions","First Computers","The first computers were as big as a whole room. They were also much slower than the computers we use today. Early computers used large tubes and switches instead of small chips. Over time, computers became smaller, faster, and cheaper. Today, a small phone can be more powerful than those first computers. Technology continues to change very quickly."],
+["inventions","Old Umbrellas","People have used umbrellas for more than 3,000 years. At first, umbrellas were mostly used for shade from the sun. Later, people began using them to stay dry in the rain. Ancient umbrellas were often decorated and used by important people. Today, umbrellas are simple and used by almost everyone. They are a great example of a very old but still useful invention."],
+["inventions","Velcro Idea","Velcro was invented after a man studied how seeds stick to clothes. He noticed tiny hooks on the seeds that grabbed onto fabric. This gave him the idea to create a new type of fastener. Velcro is now used in clothes, shoes, and even space suits. It is a great example of getting ideas from nature. This process is sometimes called biomimicry."],
+["inventions","The Zipper","The zipper took many years and many tries to become popular. Early versions did not always work very well. Eventually, a better design made zippers strong and reliable. Zippers became very popular for clothes, bags, and boots. They are much faster to use than buttons. Today, zippers are found in almost every home."],
+["inventions","First Chocolate Bar","The first chocolate bar was made in the 1800s. Before that, chocolate was mostly a drink, not something solid to eat. New machines made it possible to turn chocolate into smooth, solid bars. Chocolate quickly became a popular treat around the world. Today, there are many different types and flavors of chocolate. It remains one of the most loved foods worldwide."],
+["food","Honey Never Spoils","Honey can stay good to eat for thousands of years. Archaeologists have even found ancient honey that was still safe to eat. This happens because honey has very little water and is naturally acidic. These conditions make it hard for bacteria to grow. Bees make honey from the nectar of flowers. Honey has been used as food and medicine for a very long time."],
+["food","Floating Apples","Apples float in water because they are 25% air. This is a fun fact that surprises many people. Apples are also a very popular fruit around the world. They come in many colors, like red, green, and yellow. Apples are a good source of fiber and vitamins. Eating fruit like apples is an important part of a healthy diet."],
+["food","Banana Family","Bananas are berries, but strawberries are not. This might sound strange, but it depends on how the fruit grows. Bananas grow from a flower and have seeds inside. Strawberries actually have their seeds on the outside. Bananas are also a good source of energy and potassium. They are one of the most popular fruits in the world."],
+["food","Carrot Colors","Carrots were originally purple, not orange. Orange carrots became popular a few hundred years ago. Carrots can also be found in colors like yellow, red, and white. They are a healthy vegetable full of vitamins. Carrots grow underground as the root of the plant. Eating vegetables like carrots is good for your eyes and skin."],
+["food","Chocolate Origin","Chocolate comes from the seeds of the cacao tree. These seeds are called cacao beans. Ancient civilizations in Central America were some of the first to use cacao. At first, chocolate was made into a bitter drink, not a sweet treat. Sugar was added to chocolate much later in history. Today, chocolate is enjoyed by people all around the world."],
+["food","Pizza History","Pizza started in Naples, Italy, hundreds of years ago. At first, it was a simple, affordable food for working families. Tomatoes were added to pizza after they arrived from the Americas. Pizza became very popular around the world in the last century. Today, there are many different styles of pizza. Almost every country has its own special way of making it."],
+["food","Rice Staple","Rice is a main food for more than half of the people in the world. It grows well in warm, wet climates. There are thousands of different types of rice. Rice has been farmed for thousands of years in Asia. It is used in many dishes around the world. Rice provides an important source of energy for many diets."],
+["food","Tomato Fruit","A tomato is a fruit, but we usually cook it like a vegetable. This is because of how it is used in cooking, not how it grows. Tomatoes come in many colors, sizes, and shapes. They are an important ingredient in many dishes, like pasta and salads. Tomatoes are also full of vitamins. They originally came from South America."],
+["food","Old Popcorn","People have eaten popcorn for thousands of years. Ancient corn kernels have even been found that could still pop. Popcorn pops because of the water inside each kernel. When heated, the water turns to steam and makes the kernel explode. Popcorn is a popular snack, especially at movies. It is also a whole grain and can be a healthy snack."],
+["food","Tea Popularity","Tea is one of the most popular drinks in the world, after water. It has been enjoyed for thousands of years, especially in Asia. Tea comes from the leaves of a plant called Camellia sinensis. There are many types of tea, like green, black, and herbal tea. Different countries have their own special ways of making tea. Drinking tea is also a way people relax and spend time together."],
+["weather","Lightning Heat","For a moment, lightning is hotter than the surface of the Sun. This heat lasts only a tiny fraction of a second. Lightning happens during storms when electricity builds up in clouds. It can travel between clouds or from a cloud to the ground. Thunder is the sound made by the rapid heating of the air. It is important to stay safe indoors during a lightning storm."],
+["weather","Snowflake Shapes","No two snowflakes look exactly the same. Each one forms in a unique way as it falls through the sky. Snowflakes are made of tiny ice crystals. Most snowflakes have six sides or points. Temperature and humidity affect the shape of each snowflake. Snow can look different depending on how the flakes stick together."],
+["weather","Rainbow Colors","A rainbow has seven main colors. They are red, orange, yellow, green, blue, indigo, and violet. Rainbows appear when sunlight passes through raindrops in the sky. The light bends and separates into different colors. You can usually see a rainbow with the sun behind you and rain in front. Rainbows are a beautiful example of light and water working together."],
+["weather","What Makes Wind","Wind happens when air moves from high pressure to low pressure. The sun heats the Earth unevenly, which creates these differences in pressure. Strong winds can form storms, like hurricanes. Wind can also be a source of clean energy through wind turbines. Sailors have used wind to travel across oceans for centuries. Wind plays an important role in weather all around the world."],
+["weather","Cloud Types","Clouds have different names depending on their shape and height. For example, cumulus clouds look big and fluffy. Cirrus clouds are thin and high in the sky. Clouds form when water vapor cools and turns into tiny droplets. Some clouds can bring rain, while others mean clear weather. Watching clouds can help people predict the weather."],
+["weather","Hurricane Names","Hurricanes get names to make them easier to talk about. This helps people share information and warnings quickly. Hurricane names are chosen from lists made every year. Hurricanes are powerful storms that form over warm ocean water. They can cause strong winds, heavy rain, and flooding. Scientists carefully track hurricanes to help keep people safe."],
+["weather","Fog Formation","Fog is a cloud that touches the ground. It forms when air near the ground cools and water vapor turns into tiny droplets. Fog can make it hard to see while driving or walking. It usually happens in the early morning or evening. Fog often disappears once the sun warms the air. Some places, like coastlines, get fog very often."],
+["weather","Thunder Sound","Thunder happens because lightning heats the air very fast. This sudden heat makes the air expand quickly, creating a loud sound. Light travels faster than sound, so we see lightning before we hear thunder. You can guess how far away a storm is by counting the seconds between them. Thunderstorms can also bring strong winds and heavy rain. It is important to stay safe during storms."],
+["weather","Dry Deserts","Some deserts can go years without any rain. Deserts are defined by how little rain they get, not just how hot they are. Some deserts, like parts of Antarctica, are actually very cold. Plants and animals in deserts have special ways to survive with little water. Cactus plants, for example, can store water for a long time. Deserts cover a large part of the Earth's land."],
+["weather","The Ice Age","During the Ice Age, much of the Earth was covered in ice. This happened thousands of years ago. Huge sheets of ice, called glaciers, covered large parts of the land. Many animals, like woolly mammoths, lived during this cold time. Scientists study ice and rocks to learn about the Ice Age. Earth's climate has changed many times throughout history."],
+["plants","Oldest Trees","Some trees are more than 4,000 years old. These ancient trees have lived through thousands of years of history. Trees grow a new ring inside their trunk every year. Scientists can count these rings to learn a tree's age. Old trees are important homes for many animals. Protecting old forests helps protect the whole environment."],
+["plants","Sunflower Movement","Young sunflowers turn to follow the Sun during the day. This movement is called heliotropism. In the morning, they face east, and by evening, they face west. As sunflowers mature, most of them stop moving and face east permanently. This helps them get more sunlight and warmth in the morning. Sunflowers are also known for their bright yellow petals."],
+["plants","Fast Bamboo","Bamboo can grow very fast, even one meter in a single day. It is actually a type of grass, not a tree. Bamboo is very strong and is used to build houses and furniture. It also grows in many different environments around the world. Some animals, like pandas, eat bamboo as their main food. Bamboo is considered a very sustainable plant."],
+["plants","Venus Flytrap","The Venus flytrap is a plant that eats small insects. It grows in soil that does not have many nutrients. When an insect touches tiny hairs inside the trap, it snaps shut quickly. The plant then slowly digests the insect for extra nutrients. Venus flytraps still use sunlight to grow, like other plants. They are found naturally in only a small part of the world."],
+["plants","Tree Oxygen","One big tree can produce enough oxygen for two people. Trees take in carbon dioxide and release oxygen into the air. This process is called photosynthesis. Forests play a big role in keeping our air clean. Trees also provide homes for many animals and insects. Planting trees is a simple way to help the environment."],
+["plants","Cactus Water","Cactus plants can store water for a very long time. This helps them survive in hot, dry deserts. Their thick stems hold water like a sponge. Cactus spines help protect them from animals and also reduce water loss. Some cactus plants can live for over 100 years. There are many different types of cactus around the world."],
+["plants","Traveling Seeds","Some seeds can travel far by flying in the wind. Other seeds travel by sticking to animals' fur or feathers. Some seeds even travel by floating on water. This helps plants grow in new places, far from the parent plant. Seeds can stay ready to grow for a long time before they sprout. This is an important part of how plants spread across the world."],
+["plants","Rainforest Plants","Rainforests have more plant species than any other place on Earth. They receive a lot of rain and sunlight all year. Many medicines we use today come from rainforest plants. Rainforests are also home to millions of animal species. Protecting rainforests helps protect biodiversity around the world. They are sometimes called the lungs of the Earth."],
+["plants","Flower Colors","Flowers use bright colors to attract bees and other insects. These insects help flowers by moving pollen from one flower to another. This process is called pollination. Some flowers even have patterns that only insects can see. Flowers come in many colors, shapes, and sizes. Pollination is very important for growing fruits and vegetables."],
+["plants","Deep Roots","Some plant roots can grow deeper than the plant is tall. Roots help plants absorb water and nutrients from the soil. They also help keep the plant firmly in the ground. Some trees have roots that spread very wide instead of deep. Roots play an important role in preventing soil erosion. A healthy root system helps a plant grow strong and tall."],
 ];
 const FACTS = FACTS_RAW.map(([cat,title,fact])=>({...FACT_CATS[cat], title, fact}));
 function dayOfYear(d){ const start=new Date(d.getFullYear(),0,0); return Math.floor((d-start)/86400000); }
@@ -1642,6 +1693,94 @@ function timerDone(){
 function toggleFullscreen(){
   if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
   else document.exitFullscreen();
+}
+
+/* ============ INICIO DE CLASE (Start of Class) ============ */
+let classStartPhase = 0; // 0 idle, 1 = phase 1 running, 2 = phase 2 running, 3 = done
+let classStartRemaining = 60;
+let classStartInterval = null;
+const START_PHASES = [
+  {label:"📦 Step 1: Get your materials ready!", secs:60},
+  {label:"🪑 Step 2: Sit down with your materials on your desk!", secs:60},
+];
+function initClassStartUI(){ updateStartUI(); }
+function updateStartUI(){
+  const displayEl = document.getElementById("startDisplay");
+  const barEl = document.getElementById("startProgressBar");
+  const labelEl = document.getElementById("startPhaseLabel");
+  const s1 = document.getElementById("startStep1"), s2 = document.getElementById("startStep2");
+  const c1 = document.getElementById("stepCircle1"), c2 = document.getElementById("stepCircle2");
+  const line = document.getElementById("startLine");
+  if(!displayEl) return;
+
+  displayEl.textContent = fmt(classStartRemaining);
+  const totalForPhase = (classStartPhase===1 || classStartPhase===2) ? START_PHASES[classStartPhase-1].secs : 60;
+  const pct = Math.max(0, Math.min(100, classStartRemaining/totalForPhase*100));
+  barEl.style.width = pct+"%";
+  const danger = classStartRemaining<=10 && classStartPhase>0 && classStartPhase<3;
+  barEl.classList.toggle("danger", danger);
+  displayEl.classList.toggle("danger", danger);
+
+  if(classStartPhase===0){ labelEl.textContent = "Press Start to begin"; labelEl.classList.remove("done-msg"); }
+  else if(classStartPhase===3){ labelEl.textContent = "🔔 Class has started! Let's begin! 🎉"; labelEl.classList.add("done-msg"); }
+  else { labelEl.textContent = START_PHASES[classStartPhase-1].label; labelEl.classList.remove("done-msg"); }
+
+  s1.classList.toggle("active", classStartPhase===1);
+  s1.classList.toggle("done", classStartPhase>=2);
+  c1.textContent = classStartPhase>=2 ? "✓" : "1";
+  s2.classList.toggle("active", classStartPhase===2);
+  s2.classList.toggle("done", classStartPhase>=3);
+  c2.textContent = classStartPhase>=3 ? "✓" : "2";
+  line.classList.toggle("done", classStartPhase>=2);
+}
+function startClassRoutine(){
+  clearInterval(classStartInterval);
+  classStartPhase = 1;
+  classStartRemaining = START_PHASES[0].secs;
+  updateStartUI();
+  classStartInterval = setInterval(()=>{
+    classStartRemaining--;
+    if(classStartRemaining<=0){
+      if(classStartPhase===1){
+        classStartPhase = 2;
+        classStartRemaining = START_PHASES[1].secs;
+        playDing();
+        updateStartUI();
+      } else {
+        clearInterval(classStartInterval);
+        classStartPhase = 3;
+        classStartRemaining = 0;
+        updateStartUI();
+        playBell();
+        celebrate();
+      }
+    } else {
+      updateStartUI();
+    }
+  },1000);
+}
+function resetClassRoutine(){
+  clearInterval(classStartInterval);
+  classStartPhase = 0;
+  classStartRemaining = 60;
+  updateStartUI();
+}
+function playBell(){
+  if(!state.settings.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const notes = [880,659,880,659,880,659];
+    notes.forEach((freq,i)=>{
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      o.connect(g); g.connect(audioCtx.destination);
+      const t0 = audioCtx.currentTime + i*0.45;
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.22, t0+0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, t0+0.4);
+      o.start(t0); o.stop(t0+0.42);
+    });
+  }catch(e){}
 }
 function toggleMute(){
   state.settings.sound = !state.settings.sound;
