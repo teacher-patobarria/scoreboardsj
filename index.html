@@ -611,12 +611,13 @@ function hydrateState(raw){
   return raw;
 }
 function loadState(){
+  // Esto solo lee el respaldo local (por si no hay internet). NO empuja nada a la nube:
+  // la nube se sincroniza aparte en initCloudSync(), que es quien manda la verdad cuando hay conexión.
   let raw = null;
   try{ raw = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){}
   state = hydrateState(raw);
   currentDate = state.settings.lastDate || todayStr();
   currentBloque = state.settings.lastBloque || "B1";
-  save();
 }
 function save(){
   state.updatedAt = Date.now();
@@ -678,9 +679,12 @@ function initCloudSync(){
       }).catch(()=>{});
     }
 
+    let firstSnapshot = true;
     ref.on("value", snap=>{
       const remote = snap.val();
-      if(remote && (!state.updatedAt || (remote.updatedAt||0) >= state.updatedAt - 1500)){
+      if(remote){
+        // La nube es siempre la verdad: lo que haya en Firebase reemplaza lo que teníamos local,
+        // así cualquier PC que abras queda igual a lo que se registró en las demás salas.
         state = hydrateState(remote);
         currentDate = state.settings.lastDate || currentDate || todayStr();
         currentBloque = state.settings.lastBloque || currentBloque || "B1";
@@ -688,7 +692,11 @@ function initCloudSync(){
         renderYearProgress();
         renderAll();
         renderGallery();
+      }else if(firstSnapshot){
+        // No hay nada en la nube todavía para este espacio (primera vez) — inicializamos con lo local.
+        save();
       }
+      firstSnapshot = false;
       setSyncBadge(true);
     }, ()=> setSyncBadge(false));
   }catch(e){ console.error(e); setSyncBadge(false); }
