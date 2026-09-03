@@ -271,11 +271,12 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       <div class="logo">🏆</div>
       <div>
         <h1>SCOREBOARD</h1>
-        <p>Marcador de participación en inglés · 7A · 7B · 8A · 8B · 1MB</p>
+        <p id="appSubtitle">Marcador de participación en inglés · 7A · 7B · 8A · 8B · 1MB</p>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
       <div style="display:flex;gap:8px;align-items:center">
+        <span class="stat-pill" id="teacherBadge" style="display:none"></span>
         <span class="stat-pill" id="syncBadge">💾 Modo local (este computador)</span>
         <button class="btn btn-ghost" id="logoutBtn" onclick="doLogout()" style="display:none;padding:6px 12px;font-size:11px">🔒 Cerrar sesión</button>
       </div>
@@ -495,18 +496,65 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
 
 <script>
 /* ============ DATA ============ */
-const CLASS_DATA = {
+const PATO_CLASS_DATA = {
 "1MB": ["Almonacid Lillo Héctor Andrés","Bahamonde Mancilla Patricio","Bravo Montero María Trinidad","Castro Kuroda Ayelén Sakura","Cid Barría Felipe Alonso","Díaz Manzano Isabel Victoria","Dougnac Celis Juan José","Fernández Müllendorff Felipe Ignacio","Guzmán Garay Bastián Tomás","Hirsch Correa Sebastián Ignacio","Lagos Muñoz Luciano Rodrigo","Loebel Cárdenas Florencia Paola","Mansilla Suárez Bruno Amaru","Martinez Sagredo León Alejandro","Mattos Mattos Kiara Rayén","Méndez Millar Magdalena Luz","Merino Rawlins Emilia Francisca","Muñoz Mancini Tomás","Núñez Acuña Mía Leonor","Opazo Valenzuela Elena Victoria","Peña Salinas Agustina Paz","Prado Núñez Isidora Amanda","Rojas Mancilla Sebastián Gonzalo Ian","Román Sepúlveda Emilia Ignacia","Rosas Paredes Valentina Ignacia","Sáez Guzmán Bárbara Antonia","Sánchez Sauterel Agustín Andrés","Santibáñez Valencia Guillermo Francisco","Speer Beltrán Antonia Belén","Subiabre Quintana Valentina Jesús","Tuteleers Santos Abril Trinidad","Vargas Barria Luna Paz","Vargas Goñi Gustavo Fernando","Vargas White Joaquín Fernando","Vergara Lausen Emilia María","Yáñez Quinteros Gabriel Augusto","Yutronic Gallardo Boris Alonso"],
 "7A": ["Almonacid Álvarez Emilio Alejandro","Almonacid Gallardo Diego Ignacio","Arriagada Betanzo Rodrigo Ignacio","Ávila González Emilia Antonia","Avilés Oyarzún Miguel Alberto","Ayala Mancilla Maite Antonia","Baeza González Agustín Vicente","Balbontín Martínez Luciano","Balkenhol Valenzuela Manuel Antonio","Blanco González Alfonso Joaquín","Bohle Haase José Tomás","Bravo Montero Elisa María","Briones Pereira Monserrat Ignacia","Bustos Díaz Rosario","Cárdenas González Javiera Antonia","Caro Santana Alonso Ignacio","Colli Gálvez Renato Hugo","Dougnac Celis Diego León","Foitzick Hijerra Helena Sofía","Friant Méndez Trinidad Valentina","Gatica Cárdenas Maximiliano Ernesto","Guerrero Pinochet Tomás Agustín","Hernández Quintana Maite Josefa","Llanos Aicon Leonor","Mendicute Johnson Juan Ignacio","Molina Gutiérrez Rafaela Simoni","Nishikawa Cardenas Daiki Maximiliano","Olavarría Alvarado Alejandro Benjamín","Opitz Miranda Evelin Javiera","Ortiz Muñoz Santiago","Ramírez Carrasco Agustina","Schlicht Schmidt Ignacia Paz","Silva Maldonado Matilda Leonor","Toro-Moreno Meriño Gustavo Alonso","Vargas Hernandez José Gustavo","Veloso Leyton Fernando Andrés","Moya Troncoso Trinidad Antonia"],
 "7B": ["Almonacid Berndt Mario Vicente","Almonacid Lillo Leslie","Ampuero Morales Agustín Ignacio","Andrade Villegas Benjamin Nicolas","Arismendi Mora Mateo Ignacio","Caldera Cisnero Abdiel Alejandro","Campos Marileo Ernesto Isaias","Cárdenas Vargas Laura Catalina","Cariman Loaiza Emiliano Ignacio","Casanueva Hormazabal Catalina Ignacia","Castillo Barrientos Fernanda Ignacia","Codjambassis Astudillo Ignacia Paola","Contreras Alvarado Mariano","Domínguez Fernández Sofía Trinidad","Durot Urrejola Rafael","Faulbaum Niklitschek Alison Constanza","Garay Hodge Lucas Ricardo","González Rehbein Paula Ignacia","Herrera Valbuena Isaac","Lagos Muñoz Maximiliano Alfredo","Leighton Verdugo Agustín Ignacio","Mancilla Guajardo Josefina Ignacia","Mancilla Rojas Josefa Emilia","Melian Pardo Renato Agustín","Mercado Oyarzún Martín","Román Quintana Fernando Emilio","Sánchez Bello Pía Martina","Santibáñez Valencia Leonor Amanda","Scherpenisse Lutz Martín Alonso","Schmölz Rutte Maximiliano Alfonso","Soto Rosas Bárbara Viviana","Subiabre Quintana Fernanda Paz","Uribe Barría Sebastián Alonso","Vodanovic Renedo Mila","Walker Castro Magdalena","Zelada Orbenes Simón Emilio"],
 "8A": ["Almonacid Barrientos Margarita Paz","Andrade Paredes Pía Trinidad","Azzerboni Uchal Facundo Maximiliano","Barrientos Chávez Josefa Ignacia","Barrientos Poblete Ema Sofía","Bartsch Aguilar Sebastián Ignacio","Brintrup Saez Camila Paz","Buschiazzo Salazar Isabella","Cáceres Zúñiga Franco Alejandro","Calquín Gallegos Martín Ignacio","Carmona Rivera Ema Sofía","Chanique Neculmán Magdalena Ignacia","España Gutierrez Antonia Paz","González Viveros María Jesús","Hernández Molina Ema Leonor","Hurtado Marquez Agustín Ignacio","Mac-Innes Opazo Magdalena Leonor","Martínez Vargas Javiera Ignacia","Melgarejo Moreno Anastasia Belén","Méndez Valenzuela Antonia María","Miranda González Martina Belén","Monsalve Pincheira Isidora Constanza","Neumann González Agustina Paz","Pinuer Delgado Bruno Alonso","Pradenas Monsalve Rosario","Rehbein Negrón Daniela Elena","Revillard San Martín Fernanda Paz","Saavedra Santos Sofía Carolina","Santibáñez Vera Diego Alejandro","Schmidt Yañez Jorge Augusto","Soto Lagos Santino Gaspar","Stange Molina Helena Cristina","Stead Pereda Emily Arleen","Torres Milad Simón Andrés","Triviño Balkenhol Paz Leonor","Ulloa Zúñiga Emilia Ignacia","Urra Ojeda Mateo Antonio","Vidal Levicoy Florencia Antonia"],
 "8B": ["Álvarez Almonacid Antonia Emilia","Álvarez Ojeda Francisca Antonia","Aros González Paula Catalina","Avilés Peña Julián Ignacio","Barría Mendoza Bruno León","Bedecarratz Schlicht Katherine Sofía","Brintrup Paredes Liam","Butto Ávila Josefina Beatriz","Caro Paredes Agustin Andrés","Castillo Villegas Elizabeth Valentina","Castro Henriquez Bruno Andres","Gatica Gempp Agustina Isidora","González Arriagada Isidora Constanza","González Espinoza Francisca Camila","Gormáz Quijada Alonso Ignacio","Hermosilla Mardones Renato Alejandro","Lavín Dabadie Catalina Florencia","López Zúñiga María Paz","Mera Monsalve Joaquín Augusto","Monras Marcos Josefa Ignacia","Nilo Del Valle Vincenzo Alejandro","Olavarría Aguilar Florencia Paz","Oyarzún Paredes Emilia Belen","Pimentel Valenzuela Emilio Andrés","Reyes Hidalgo Amanda Lidia","Rossi Hernandez Jose Pedro","Sandoval Zincker Nicolás Javier","Schweitzer Hermosilla Emilia Agustina","Segura Mansilla Javiera Constanza","Sepúlveda Inzunza Joaquín Sebastián Ignacio","Sotomayor Schipmann Alonso Ignacio","Uribe Marín Belén Anahí","Uribe Mery Dante Roberto","Vega Ruiz Amanda Isidora","Vergara Morales Luis Emilio"]
 };
-const CLASS_LIST = ["1MB","7A","7B","8A","8B"];
-const CLASS_COLOR = {"1MB":"#a855f7","7A":"#06b6d4","7B":"#22c55e","8A":"#f97316","8B":"#ec4899"};
+const PATO_CLASS_LIST = ["1MB","7A","7B","8A","8B"];
+const PATO_CLASS_COLOR = {"1MB":"#a855f7","7A":"#06b6d4","7B":"#22c55e","8A":"#f97316","8B":"#ec4899"};
+const PATO_CLASS_BLOCKS = {
+  "7A": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 40 min"},{id:"B3",label:"Bloque 3 · 40 min"},{id:"B4",label:"Bloque 4 · 40 min"}],
+  "7B": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
+  "8A": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
+  "8B": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
+  "1MB": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
+};
+
+const CARLOS_CLASS_DATA = {
+"7C": ["Aubá Solís Martín Alonso","Bahamonde Vargas Rafael Matías","Barría Valenzuela Agustín Ignacio","Brach Llanos Magdalena Sofía","Castro Cáceres Matías Agustín","Contreras Chávez Amalia Isidora","Doerner Uribe Julieta Isabel","Espinoza Urriaga Benjamín Gabriel","González Alvarado Cristóbal Hernán","González Pérez Lucas Joaquín Nicolás","Guzmán Serna Isabella","Hurtado Correa Josefina Ignacia","Lillo Hidalgo Maximiliano Matias","Maldonado Rodríguez Beatriz Antonia","Mendoza Garay Julieta Isabel Elsa","Miranda Jaramillo Florencia Leonor","Morrison Contreras Amanda","Orellana Mora Pedro Nicolás","Paris Anderson Sebastián Eduardo","Pedraza Valdés Amaro Emilio","Queirolo Romero Maximiliano Stefano","Ramírez Soto Laura Belén","Sánchez Varas Pedro Andrés","Sandoval Guaquiante Esteban Francisco","Sandoval Müller Benjamín Jesús","Sanhueza Mendoza Josefa Isidora","Santana Vásquez Josefa Leonor","Santibáñez Navarro Renato Lorenzo","Schafer Cordova Daniel Alejandro","Schipmann Luciniani Hermann Iker Matías","Schroeder Ruiz Kristine Isabella","Schweitzer Hermosilla Gabriela Ignacia","Ulloa Guzmán Samuel Ignacio","Urzúa Vargas Martín Ignacio","Venegas Navarrete Sara Trinidad","Yutronic Gallardo Mirko Emilio","Zaror Triviño Renata Sofía"]
+};
+const CARLOS_CLASS_LIST = ["7C"];
+const CARLOS_CLASS_COLOR = {"7C":"#eab308"};
+const CARLOS_CLASS_BLOCKS = {
+  "7C": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
+};
+
+const GENERIC_BLOCKS = [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}];
+
+/* Mapa de profesores: cada correo ve solo sus propios cursos y datos, separados entre sí. */
+const TEACHERS = {
+  "refreshdigitalcl@gmail.com": {
+    workspaceId: "pato",
+    label: "Pato Barría",
+    classList: PATO_CLASS_LIST,
+    classData: PATO_CLASS_DATA,
+    classColor: PATO_CLASS_COLOR,
+    classBlocks: PATO_CLASS_BLOCKS
+  },
+  "carlos.vasquez@colsanjavier.cl": {
+    workspaceId: "carlos",
+    label: "Carlos Vásquez",
+    classList: CARLOS_CLASS_LIST,
+    classData: CARLOS_CLASS_DATA,
+    classColor: CARLOS_CLASS_COLOR,
+    classBlocks: CARLOS_CLASS_BLOCKS
+  }
+};
+const DEFAULT_TEACHER_EMAIL = "refreshdigitalcl@gmail.com";
+
+/* Estas 4 quedan "activas" según quién inició sesión — bootWorkspace() las reasigna. */
+let CLASS_DATA = PATO_CLASS_DATA;
+let CLASS_LIST = PATO_CLASS_LIST;
+let CLASS_COLOR = PATO_CLASS_COLOR;
+let CLASS_BLOCKS = PATO_CLASS_BLOCKS;
+let CURRENT_WORKSPACE_ID = "pato";
+let CLOUD_PATH = "scoreboard_state/pato";
 
 /* ============ STATE ============ */
-const STORAGE_KEY = "score_english_state_v1";
+let STORAGE_KEY = "score_english_state_v1__pato";
 let state = null;
 let currentClass = "Todas";
 let currentTab = "marcador";
@@ -585,15 +633,51 @@ function ensureFirebaseApp(){
   try{ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig); return true; }
   catch(e){ console.error(e); return false; }
 }
-let cloudListenerAttached = false;
+
+/* Aplica el "espacio de trabajo" del profesor que inició sesión: sus cursos, su guardado local
+   y su ruta propia en Firebase. Se llama una vez resuelto el login (o de inmediato en modo local). */
+function bootWorkspace(cfg){
+  CLASS_LIST = cfg.classList;
+  CLASS_DATA = cfg.classData;
+  CLASS_COLOR = cfg.classColor;
+  CLASS_BLOCKS = cfg.classBlocks;
+  CURRENT_WORKSPACE_ID = cfg.workspaceId;
+  STORAGE_KEY = "score_english_state_v1__" + cfg.workspaceId;
+  CLOUD_PATH = "scoreboard_state/" + cfg.workspaceId;
+  currentClass = "Todas";
+  const subtitle = document.getElementById("appSubtitle");
+  if(subtitle) subtitle.textContent = "Marcador de participación en inglés · " + cfg.classList.join(" · ");
+  const teacherBadge = document.getElementById("teacherBadge");
+  if(teacherBadge){ teacherBadge.textContent = "👤 " + cfg.label; teacherBadge.style.display = "inline-block"; }
+  loadState();
+  buildClassbar();
+  renderYearProgress();
+  renderAll();
+}
+
+let cloudListenerRef = null;
 function initCloudSync(){
   if(!CLOUD_SYNC_ENABLED){ setSyncBadge(false); return; }
   if(!ensureFirebaseApp()){ setSyncBadge(false); return; }
   try{
     fbDb = firebase.database();
-    if(cloudListenerAttached) return; // evita registrar el listener más de una vez
-    cloudListenerAttached = true;
-    const ref = fbDb.ref("scoreboard_state");
+    if(cloudListenerRef) cloudListenerRef.off();
+    const ref = fbDb.ref(CLOUD_PATH);
+    cloudListenerRef = ref;
+
+    // Migración única (solo para "pato"): si su espacio nuevo está vacío, rescata los datos
+    // que quedaron guardados en la ruta plana antigua "scoreboard_state" antes de separar por profesor.
+    if(CURRENT_WORKSPACE_ID === "pato"){
+      ref.once("value").then(snap=>{
+        if(!snap.val()){
+          fbDb.ref("scoreboard_state").once("value").then(oldSnap=>{
+            const old = oldSnap.val();
+            if(old && old.students){ ref.set(old); }
+          }).catch(()=>{});
+        }
+      }).catch(()=>{});
+    }
+
     ref.on("value", snap=>{
       const remote = snap.val();
       if(remote && (!state.updatedAt || (remote.updatedAt||0) >= state.updatedAt - 1500)){
@@ -611,15 +695,16 @@ function initCloudSync(){
 }
 
 /* ============ ACCESO (Firebase Auth, opcional) ============
-   Solo se activa si ya configuraste firebaseConfig arriba. Para crear tu acceso:
+   Solo se activa si ya configuraste firebaseConfig arriba. Para agregar un profesor:
    1) Firebase console → "Authentication" → "Comenzar" → pestaña "Sign-in method" → habilita "Correo electrónico/contraseña".
-   2) Pestaña "Users" → "Add user" → escribe tu correo y una clave → "Add user".
-   3) (Recomendado) En Realtime Database → Reglas, cambia a:
-      { "rules": { ".read": "auth != null", ".write": "auth != null" } }  y publica.
-   Así solo quien inicie sesión con ese correo/clave puede ver y modificar el marcador. */
+   2) Pestaña "Users" → "Add user" → escribe su correo y una clave → "Add user".
+   3) Agrega su entrada en el objeto TEACHERS más arriba (correo, cursos, colores, bloques).
+   4) Actualiza las reglas de Realtime Database para que cada profesor solo lea/escriba su propia rama
+      "scoreboard_state/<workspaceId>" (ver ejemplo en las instrucciones que te di en el chat). */
 function initAuthGate(){
   if(!CLOUD_SYNC_ENABLED || !ensureFirebaseApp() || typeof firebase.auth !== "function"){
     document.getElementById("appRoot").style.display = "";
+    bootWorkspace(TEACHERS[DEFAULT_TEACHER_EMAIL]);
     initCloudSync();
     return;
   }
@@ -628,9 +713,17 @@ function initAuthGate(){
     const root = document.getElementById("appRoot");
     const logoutBtn = document.getElementById("logoutBtn");
     if(user){
+      const email = (user.email||"").toLowerCase();
+      const cfg = TEACHERS[email];
+      if(!cfg){
+        alert("Esta cuenta (" + email + ") no tiene cursos configurados todavía. Avísale al administrador.");
+        firebase.auth().signOut();
+        return;
+      }
       gate.classList.remove("show");
       root.style.display = "";
       logoutBtn.style.display = "inline-block";
+      bootWorkspace(cfg);
       initCloudSync();
     }else{
       gate.classList.add("show");
@@ -659,7 +752,7 @@ function scheduleCloudPush(){
   if(!CLOUD_SYNC_ENABLED) return;
   clearTimeout(pushTimer);
   pushTimer = setTimeout(()=>{
-    if(fbDb) fbDb.ref("scoreboard_state").set(state).catch(e=>{ console.error(e); setSyncBadge(false); });
+    if(fbDb) fbDb.ref(CLOUD_PATH).set(state).catch(e=>{ console.error(e); setSyncBadge(false); });
   }, 350);
 }
 function setSyncBadge(ok){
@@ -682,14 +775,7 @@ function getWeek(st){ const mon = isoMonday(new Date()); return sumHistory(st.hi
 function getMonth(st){ const now=new Date(); return sumHistory(st.history, h=>{ const d=new Date(h.d); return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth(); }); }
 
 /* ============ AÑO ESCOLAR / SESIÓN ============ */
-const CLASS_BLOCKS = {
-  "7A": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 40 min"},{id:"B3",label:"Bloque 3 · 40 min"},{id:"B4",label:"Bloque 4 · 40 min"}],
-  "7B": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
-  "8A": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
-  "8B": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
-  "1MB": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
-};
-function bloqueOptionsFor(cls){ return CLASS_BLOCKS[cls] || CLASS_BLOCKS["7B"]; }
+function bloqueOptionsFor(cls){ return CLASS_BLOCKS[cls] || GENERIC_BLOCKS; }
 function bloqueLabel(cls, id){ const f = bloqueOptionsFor(cls).find(b=>b.id===id); return f ? f.label : ("Bloque "+id); }
 function renderYearProgress(){
   const cal = state.settings.calendar;
@@ -896,19 +982,15 @@ function levelInfo(total){
 
 /* ============ INIT ============ */
 document.addEventListener("DOMContentLoaded", ()=>{
-  loadState();
-  buildClassbar();
   bindTabs();
   document.getElementById("search").addEventListener("input", renderMarcador);
   document.getElementById("sortBy").addEventListener("change", renderMarcador);
   document.getElementById("claseFecha").addEventListener("change", onDateOrBloqueChange);
   document.getElementById("claseBloque").addEventListener("change", onDateOrBloqueChange);
-  renderYearProgress();
-  renderAll();
   initTimerUI();
   resizeConfetti();
   setSyncBadge(false);
-  initAuthGate();
+  initAuthGate(); // esta función llama a bootWorkspace() -> loadState()/buildClassbar()/renderAll() una vez resuelto quién inició sesión
 });
 window.addEventListener("resize", resizeConfetti);
 
