@@ -256,6 +256,38 @@ video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:
 .start-line.done::after{transform:scaleX(1)}
 .start-phase-label{font-size:17px;font-weight:800;margin-bottom:4px;min-height:26px}
 .start-phase-label.done-msg{background:linear-gradient(135deg,#8ce99a,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.not-ready-card{margin-top:14px;text-align:center}
+.not-ready-textarea{
+  width:100%;max-width:640px;margin:0 auto;display:block;resize:vertical;
+  background:#100e24;border:1px solid var(--line);border-radius:12px;color:var(--text);
+  padding:12px 14px;font-size:14px;font-family:inherit;line-height:1.5;
+}
+.not-ready-textarea:focus{outline:none;border-color:#7c3aed}
+
+/* ===== FULLSCREEN / KIOSK MODE ===== */
+body.fs-active header.top,
+body.fs-active nav.tabs,
+body.fs-active footer.settings,
+body.fs-active > .app > .hint,
+body.fs-active .not-ready-card{ display:none !important; }
+body.fs-active .app{max-width:100%;padding:0;display:flex;min-height:100vh}
+body.fs-active .section.active{display:flex !important;flex:1;align-items:center;justify-content:center;width:100%}
+body.fs-active .start-wrap{width:100%;max-width:100%}
+body.fs-active .card{border:none;background:transparent;box-shadow:none;backdrop-filter:none;padding:20px}
+body.fs-active .start-title{font-size:min(9vw,80px);margin-bottom:10px}
+body.fs-active .start-sub{font-size:min(2.6vw,22px);margin-bottom:36px}
+body.fs-active .start-steps{margin-bottom:36px;gap:0}
+body.fs-active .step-circle{width:min(18vw,150px);height:min(18vw,150px);font-size:min(7vw,60px);border-width:3px}
+body.fs-active .step-label{font-size:min(3.2vw,28px);max-width:min(28vw,260px);line-height:1.25}
+body.fs-active .start-line{width:min(16vw,180px);height:5px;margin-top:min(9vw,75px)}
+body.fs-active .start-phase-label{font-size:min(6vw,52px);min-height:auto;margin-bottom:14px}
+body.fs-active .timer-display{font-size:min(30vw,320px);margin:10px 0}
+body.fs-active .timer-progress-wrap{max-width:min(80vw,900px);height:28px}
+body.fs-active .timer-controls{margin-top:min(4vw,36px) !important}
+body.fs-active .timer-controls .btn{font-size:min(2.2vw,18px);padding:min(1.6vw,16px) min(2.4vw,24px)}
+/* TIMER tab en fullscreen también se ve más grande */
+body.fs-active .timer-wrap .timer-stepper{gap:min(2vw,18px)}
+body.fs-active .stepper-btn{font-size:min(2.4vw,20px);padding:min(2vw,18px) min(2.4vw,22px)}
 
 /* modal */
 .modal-bg{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
@@ -333,17 +365,17 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
   </header>
 
   <nav class="tabs">
-    <button data-tab="marcador" class="active">📊 Marcador</button>
-    <button data-tab="inicio">🔔 Inicio de Clase</button>
+    <button data-tab="inicio" class="active">🎯 Class Preparation</button>
+    <button data-tab="marcador">📊 Marcador</button>
     <button data-tab="podio">🥇 Podio</button>
     <button data-tab="calendario">📅 Calendario</button>
     <button data-tab="timer">⏱️ Timer</button>
   </nav>
 
-  <!-- INICIO DE CLASE -->
-  <section id="tab-inicio" class="section">
-    <div class="card start-wrap">
-      <h2 class="start-title">🔔 START OF CLASS</h2>
+  <!-- CLASS PREPARATION -->
+  <section id="tab-inicio" class="section active">
+    <div class="card start-wrap" id="startCard">
+      <h2 class="start-title">🎯 CLASS PREPARATION</h2>
       <p class="start-sub">Press Start and follow the steps together as a class.</p>
 
       <div class="start-steps">
@@ -370,10 +402,19 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
         <button class="btn btn-ghost" onclick="toggleFullscreen()">⛶ Fullscreen</button>
       </div>
     </div>
+
+    <div class="card not-ready-card" id="notReadyCard">
+      <h3 style="margin:0 0 10px">⚠️ Students Who Were Not Ready</h3>
+      <p class="session-note" style="margin:0 0 10px">Write down the names of students who did not meet the goal today.</p>
+      <textarea id="notReadyList" class="not-ready-textarea" rows="4" placeholder="Type student names here, one per line..." oninput="saveNotReadyList()"></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;justify-content:center">
+        <button class="btn btn-ghost" onclick="clearNotReadyList()">🗑️ Clear list</button>
+      </div>
+    </div>
   </section>
 
   <!-- MARCADOR -->
-  <section id="tab-marcador" class="section active">
+  <section id="tab-marcador" class="section">
     <div class="card year-card">
       <div class="year-head">
         <b>📆 Año escolar <span id="yearNum"></span></b>
@@ -657,7 +698,7 @@ let CLOUD_PATH = "scoreboard_state/pato";
 let STORAGE_KEY = "score_english_state_v1__pato";
 let state = null;
 let currentClass = "Todas";
-let currentTab = "marcador";
+let currentTab = "inicio";
 let currentDate = null;
 let currentBloque = "B1";
 const DEFAULT_CALENDAR = {start:"2026-03-02", end:"2026-12-18", vacStart:"2026-07-13", vacEnd:"2026-07-24"};
@@ -754,6 +795,7 @@ function bootWorkspace(cfg){
   buildClassbar();
   renderYearProgress();
   renderAll();
+  loadNotReadyList();
 }
 
 let cloudListenerRef = null;
@@ -1693,6 +1735,28 @@ function timerDone(){
 function toggleFullscreen(){
   if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
   else document.exitFullscreen();
+}
+document.addEventListener("fullscreenchange", ()=>{
+  document.body.classList.toggle("fs-active", !!document.fullscreenElement);
+});
+
+/* ============ STUDENTS WHO WERE NOT READY (Class Preparation) ============ */
+function notReadyKey(){ return "class_prep_not_ready__" + (CURRENT_WORKSPACE_ID||"pato"); }
+function loadNotReadyList(){
+  const el = document.getElementById("notReadyList");
+  if(!el) return;
+  el.value = localStorage.getItem(notReadyKey()) || "";
+}
+function saveNotReadyList(){
+  const el = document.getElementById("notReadyList");
+  if(!el) return;
+  localStorage.setItem(notReadyKey(), el.value);
+}
+function clearNotReadyList(){
+  const el = document.getElementById("notReadyList");
+  if(!el) return;
+  el.value = "";
+  saveNotReadyList();
 }
 
 /* ============ INICIO DE CLASE (Start of Class) ============ */
