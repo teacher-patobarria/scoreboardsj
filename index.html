@@ -1022,6 +1022,19 @@ function notifyRemotePointChanges(newState, oldMap){
     showVoiceToast(`✅ +1 a todo el curso (${label})`, null);
   }
 }
+
+/* ============ COMANDO "MOSTRAR PODIO" SINCRONIZADO ============
+   Cuando el profesor dice "Hey NEXA, show me today's results" desde el celular, además de
+   mostrar el podio en ESE dispositivo, guardamos la orden en la nube para que la pantalla
+   principal del PC (y cualquier otra pantalla abierta) también cambie a Podio sola, sin que
+   nadie la toque. knownPodiumCommandTime empieza "undefined" (sin línea base) para no disparar
+   el cambio de pestaña apenas se carga la página con una orden vieja del día anterior. */
+let knownPodiumCommandTime;
+function broadcastPodiumCommand(cls){
+  if(!state.settings) state.settings = {};
+  state.settings.podiumCommand = { t: Date.now(), cls };
+  save();
+}
 let currentClass = "Todas";
 let currentTab = "inicio";
 let currentDate = null;
@@ -1092,6 +1105,7 @@ function save(){
   // Firebase, no volvemos a sonar la campanita en este mismo dispositivo (ya sonó al momento).
   knownHistoryCount = currentHistoryCount(state);
   knownHistoryPerStudent = studentHistoryLengths(state);
+  knownPodiumCommandTime = (state.settings && state.settings.podiumCommand && state.settings.podiumCommand.t) || 0;
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch(e){
     // storage full — drop oldest photos and retry
@@ -1191,6 +1205,21 @@ function initCloudSync(){
         renderYearProgress();
         renderAll();
         renderGallery();
+        // Si el profesor pidió ver los resultados por voz desde OTRO dispositivo (ej. NEXA
+        // en el celular), esta pantalla también salta sola a la pestaña Podio del mismo curso,
+        // como si alguien hubiera hecho clic aquí. No se repite en el dispositivo que dio la
+        // orden porque ese ya actualizó knownPodiumCommandTime al guardar (ver save()).
+        const podiumCmd = state.settings && state.settings.podiumCommand;
+        const podiumCmdTime = (podiumCmd && podiumCmd.t) || 0;
+        if(knownPodiumCommandTime !== undefined && podiumCmdTime > knownPodiumCommandTime){
+          if(podiumCmd.cls && CLASS_LIST.includes(podiumCmd.cls) && podiumCmd.cls !== currentClass){
+            currentClass = podiumCmd.cls;
+            document.querySelectorAll(".chip").forEach(b=> b.classList.toggle("active", b.dataset.cls===podiumCmd.cls));
+          }
+          playNexaResults();
+          goToPodioTab();
+        }
+        knownPodiumCommandTime = podiumCmdTime;
       }else if(firstSnapshot){
         // No hay nada en la nube todavía para este espacio (primera vez) — inicializamos con lo local.
         save();
@@ -1865,6 +1894,7 @@ function handleVoiceTranscript(rawTranscript){
     if(currentClass==="Todas"){ showVoiceToast("⚠️ Selecciona un curso arriba primero", null); return; }
     playNexaResults();
     goToPodioTab();
+    broadcastPodiumCommand(currentClass); // avisa a las demás pantallas (ej. el PC del aula) para que también salten a Podio
     showVoiceToast(`🏆 Mostrando el podio de ${currentClass}`, null);
     return;
   }
