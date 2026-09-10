@@ -362,6 +362,23 @@ body.fs-active .stepper-btn{font-size:min(2vmin,18px);padding:min(1.6vmin,16px) 
 .modal-close{float:right;cursor:pointer;background:none;border:none;color:var(--muted);font-size:18px}
 .event-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 
+/* ===== POPUP DE BIENVENIDA / FUNCIONES (una vez al día) ===== */
+.modal.features-modal{max-width:780px;padding:26px 26px 22px}
+.features-modal .fm-head{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.features-modal .fm-head .fm-logo{
+  width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:linear-gradient(135deg,#7c3aed,#22d3ee);box-shadow:0 8px 22px #7c3aed55;flex:none}
+.features-modal h3{margin:0;font-size:22px}
+.features-modal .features-sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px}
+.feature-item{background:#14122a;border:1px solid var(--line);border-radius:14px;padding:13px;display:flex;flex-direction:column;gap:7px;animation:fadeIn .3s ease}
+.feature-item .fi-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 14px #0007;flex:none}
+.feature-item .fi-title{font-weight:800;font-size:13.5px}
+.feature-item .fi-desc{color:var(--muted);font-size:12px;line-height:1.45}
+.features-modal .features-footer{margin-top:20px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.features-modal .features-footer .hint{margin:0;font-size:11.5px}
+@media (max-width:520px){ .modal.features-modal{padding:20px 16px 18px} .feature-grid{grid-template-columns:1fr 1fr} }
+
 /* ===== INTERESTING FACT (calendario) ===== */
 .fact-card{text-align:center;padding:6px 0 18px}
 .fact-icon-wrap{position:relative;width:104px;height:104px;margin:6px auto 14px;display:flex;align-items:center;justify-content:center}
@@ -423,6 +440,7 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       <div style="display:flex;gap:8px;align-items:center">
         <span class="stat-pill" id="teacherBadge" style="display:none"></span>
         <span class="stat-pill" id="syncBadge">💾 Modo local (este computador)</span>
+        <button class="btn btn-ghost" onclick="openFeaturesModal()" style="padding:6px 12px;font-size:11px">✨ Novedades</button>
         <button class="btn btn-ghost" id="logoutBtn" onclick="doLogout()" style="display:none;padding:6px 12px;font-size:11px">🔒 Cerrar sesión</button>
       </div>
       <div class="classbar" id="classbar"></div>
@@ -800,6 +818,75 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
   </div>
 </div>
 
+<div class="modal-bg" id="featuresModalBg">
+  <div class="modal features-modal">
+    <button class="modal-close" onclick="closeFeaturesModal()">✕</button>
+    <div class="fm-head">
+      <div class="fm-logo">🏆</div>
+      <div>
+        <h3>¡Bienvenido a SCOREBOARD!</h3>
+        <p class="features-sub">Un repaso rápido de todo lo que puedes hacer hoy en clases.</p>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#7c3aed,#22d3ee)">🎯</div>
+        <div class="fi-title">Class Preparation</div>
+        <div class="fi-desc">Temporizador de 2 pasos (materiales + sentados) en pantalla completa. Marca quién no llegó listo y da +1 a todo el curso con un clic.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#22d3ee,#7c3aed)">📊</div>
+        <div class="fi-title">Marcador</div>
+        <div class="fi-desc">Otorga puntos por participación y actitud, busca alumnos y revisa el historial de cada bloque en tiempo real.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#ffd166,#ff9f43)">🥇</div>
+        <div class="fi-title">Podio</div>
+        <div class="fi-desc">Ranking completo del curso con foto y medallas para el Top 3 de cada periodo.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#22c55e,#22d3ee)">⏱️</div>
+        <div class="fi-title">Timer</div>
+        <div class="fi-desc">Cuenta regresiva o cronómetro con barra de progreso neón, presets rápidos y modo pantalla completa.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)">📅</div>
+        <div class="fi-title">Calendario</div>
+        <div class="fi-desc">Vista semanal y mensual con un "dato curioso" distinto cada día: ciencia, historia, arte, música, tecnología y más.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#22c55e,#4ade80)">👥</div>
+        <div class="fi-title">Grupos y parejas</div>
+        <div class="fi-desc">Arma grupos al azar de 2, 4 o un tamaño personalizado, siempre parejos entre todos los alumnos del curso.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#ff5d5d,#ffd166)">🎲</div>
+        <div class="fi-title">Estudiante al azar</div>
+        <div class="fi-desc">Sorteo con animación de tensión de 4 segundos, perfecto para elegir quién responde o pasa a la pizarra.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#ff5d5d,#7c3aed)">🎤</div>
+        <div class="fi-title">Puntos por voz</div>
+        <div class="fi-desc">Activa el micrófono y camina por la sala: di "marcador [nombre] uno" o "dos" y el punto se suma solo, sin tocar la pantalla.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#ec4899,#7c3aed)">🔔</div>
+        <div class="fi-title">End of Class</div>
+        <div class="fi-desc">El mismo temporizador de 2 pasos para guardar el material de inglés y sacar el de la próxima asignatura, con su propia lista de "no listos".</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:linear-gradient(135deg,#06b6d4,#22c55e)">☁️</div>
+        <div class="fi-title">Todo sincronizado</div>
+        <div class="fi-desc">Los puntos y sonidos se reflejan al instante en cualquier computador o celular conectado — das el punto en uno y suena en todos.</div>
+      </div>
+    </div>
+    <div class="features-footer">
+      <p class="hint">Este resumen aparece solo una vez al día. Puedes volver a verlo con el botón "✨ Novedades" arriba.</p>
+      <button class="btn btn-primary" onclick="closeFeaturesModal()">¡Entendido!</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============ DATA ============ */
 const PATO_CLASS_DATA = {
@@ -889,6 +976,16 @@ let CLOUD_PATH = "scoreboard_state/pato";
 /* ============ STATE ============ */
 let STORAGE_KEY = "score_english_state_v1__pato";
 let state = null;
+/* Cuenta total de puntos otorgados (largo de todos los "history" juntos), usada para detectar
+   cuándo llegan puntos NUEVOS desde otro dispositivo (ej. el celular del profesor dando puntos
+   por voz) y así poder sonar la campanita en esta pantalla también, aunque el punto no se haya
+   dado desde aquí. Ver knownHistoryCount más abajo. */
+let knownHistoryCount = null;
+function currentHistoryCount(st){
+  let n = 0;
+  if(st && st.students){ Object.values(st.students).forEach(s=>{ n += (s.history||[]).length; }); }
+  return n;
+}
 let currentClass = "Todas";
 let currentTab = "inicio";
 let currentDate = null;
@@ -954,6 +1051,10 @@ function loadState(){
 }
 function save(){
   state.updatedAt = Date.now();
+  // Recordamos cuántos puntos hay en total ANTES de que la nube nos devuelva este mismo
+  // cambio (ver initCloudSync): así, cuando el "eco" de nuestro propio guardado vuelva desde
+  // Firebase, no volvemos a sonar la campanita en este mismo dispositivo (ya sonó al momento).
+  knownHistoryCount = currentHistoryCount(state);
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch(e){
     // storage full — drop oldest photos and retry
@@ -992,6 +1093,19 @@ function bootWorkspace(cfg){
   renderNotReadySuggestions();
   loadNotReadyEndList();
   renderNotReadyEndSuggestions();
+  maybeShowFeaturesPopup();
+}
+
+/* ============ POPUP DE BIENVENIDA / FUNCIONES (una vez al día) ============ */
+function openFeaturesModal(){ document.getElementById("featuresModalBg").classList.add("show"); }
+function closeFeaturesModal(){ document.getElementById("featuresModalBg").classList.remove("show"); }
+function maybeShowFeaturesPopup(){
+  try{
+    const key = "features_popup_seen__" + CURRENT_WORKSPACE_ID + "__" + todayStr();
+    if(localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+  }catch(e){}
+  openFeaturesModal();
 }
 
 let cloudListenerRef = null;
@@ -1024,6 +1138,14 @@ function initCloudSync(){
         // La nube es siempre la verdad: lo que haya en Firebase reemplaza lo que teníamos local,
         // así cualquier PC que abras queda igual a lo que se registró en las demás salas.
         state = hydrateState(remote);
+        // Si llegaron puntos NUEVOS que no dimos desde este dispositivo (ej. el profesor los dio
+        // por voz desde su celular caminando por la sala), suena la campanita aquí también, para
+        // que el curso escuche que el punto quedó registrado en la pantalla principal.
+        const newHistoryCount = currentHistoryCount(state);
+        if(knownHistoryCount !== null && newHistoryCount > knownHistoryCount){
+          playEarnPointSound();
+        }
+        knownHistoryCount = newHistoryCount;
         currentDate = state.settings.lastDate || currentDate || todayStr();
         currentBloque = state.settings.lastBloque || currentBloque || "B1";
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
