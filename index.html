@@ -111,6 +111,21 @@ nav.tabs button:hover{transform:translateY(-2px)}
 .draw-modal{max-width:520px;text-align:center;background:linear-gradient(160deg,#1c1a35,#0b0f1e)}
 
 /* ===== VOICE POINTS ===== */
+.group-card{margin-bottom:14px; border-color:#22c55e55}
+.group-size-picker{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.size-btn{background:#151230a0;border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+.size-btn:hover{transform:translateY(-1px)}
+.size-btn.active{background:linear-gradient(135deg,#22c55e,#4ade80);color:#08081a;border-color:transparent;box-shadow:0 6px 18px #22c55e44}
+.size-custom{width:60px;padding:10px 8px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);text-align:center;font-size:13px}
+.size-custom:focus{outline:none;border-color:#22c55e}
+.group-modal{max-width:680px}
+.group-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:16px 0;max-height:55vh;overflow-y:auto;padding-right:4px}
+.group-box{background:#100e24;border:1px solid var(--line);border-radius:14px;padding:12px 14px;animation:groupPop .35s ease backwards}
+@keyframes groupPop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.group-badge{display:inline-block;background:linear-gradient(135deg,#22c55e,#22d3ee);color:#08081a;font-weight:900;font-size:12px;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.group-members{list-style:none;margin:0;padding:0;font-size:13px;line-height:1.6}
+.group-members li{padding:2px 0;border-bottom:1px dashed var(--line)}
+.group-members li:last-child{border-bottom:none}
 .voice-card{margin-bottom:14px; border-color:#7c3aed55}
 .voice-status{display:none;align-items:center;gap:8px;font-size:12px;color:#ff5d5d;font-weight:800}
 .voice-status.active{display:flex}
@@ -510,6 +525,23 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       </div>
     </div>
 
+    <div class="card group-card">
+      <div class="draw-card-row">
+        <div>
+          <h3 style="margin:0 0 4px">👥 Grupos al azar</h3>
+          <p class="session-note" style="margin:0" id="groupStatus">Selecciona un curso para formar grupos</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <div class="group-size-picker" id="groupSizePicker">
+            <button class="size-btn active" data-size="2" onclick="setGroupSize(2)">👫 Parejas</button>
+            <button class="size-btn" data-size="4" onclick="setGroupSize(4)">👨‍👩‍👧‍👦 Grupos de 4</button>
+            <input type="number" id="groupCustomSize" class="size-custom" min="2" max="30" placeholder="N°" title="Tamaño personalizado" onfocus="setGroupSize('custom')" oninput="setGroupSize('custom')">
+          </div>
+          <button class="btn btn-draw" onclick="startRandomGroups()">🎲 ¡Formar grupos!</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card voice-card">
       <div class="draw-card-row">
         <div>
@@ -678,6 +710,18 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <div class="draw-actions" id="drawActions" style="display:none">
       <button class="btn btn-primary" onclick="startRandomDraw()">🔁 Sortear otra vez</button>
       <button class="btn btn-ghost" onclick="closeDrawModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="groupModalBg">
+  <div class="modal group-modal">
+    <button class="modal-close" onclick="closeGroupModal()">✕</button>
+    <h3 id="groupModalTitle">👥 Grupos</h3>
+    <div class="group-results" id="groupResults"></div>
+    <div class="draw-actions">
+      <button class="btn btn-primary" onclick="startRandomGroups()">🔁 Formar de nuevo</button>
+      <button class="btn btn-ghost" onclick="closeGroupModal()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1170,6 +1214,71 @@ function closeDrawModal(){
   cancelAnimationFrame(drawTimer);
   document.getElementById("drawModalBg").classList.remove("show");
 }
+
+/* ============ GRUPOS AL AZAR ============ */
+let groupSize = 2;
+function setGroupSize(size){
+  groupSize = size;
+  document.querySelectorAll("#groupSizePicker .size-btn").forEach(b=>{
+    b.classList.toggle("active", size!=="custom" && b.dataset.size == size);
+  });
+  if(size !== "custom"){
+    const custom = document.getElementById("groupCustomSize");
+    if(custom) custom.value = "";
+  }
+}
+function getEffectiveGroupSize(){
+  const custom = document.getElementById("groupCustomSize");
+  if(custom && custom.value.trim() !== ""){
+    const n = parseInt(custom.value, 10);
+    if(n >= 2) return n;
+    return null; // valor personalizado inválido
+  }
+  return typeof groupSize === "number" ? groupSize : 2;
+}
+function updateGroupStatus(){
+  const label = document.getElementById("groupStatus");
+  if(!label) return;
+  if(currentClass==="Todas"){ label.textContent = "Selecciona un curso arriba para formar grupos."; return; }
+  const total = (CLASS_DATA[currentClass]||[]).length;
+  label.textContent = `Curso ${currentClass}: ${total} estudiantes registrados.`;
+}
+function startRandomGroups(){
+  if(currentClass==="Todas"){ alert("Selecciona un curso arriba para formar grupos."); return; }
+  const roster = CLASS_DATA[currentClass] || [];
+  if(roster.length < 2){ alert("Este curso no tiene suficientes estudiantes registrados."); return; }
+  const size = getEffectiveGroupSize();
+  if(!size || size < 2){ alert("El tamaño del grupo debe ser 2 o más."); return; }
+
+  const shuffled = [...roster];
+  for(let i = shuffled.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  // Repartimos en la cantidad de grupos más cercana al tamaño elegido, distribuyendo
+  // parejo (round-robin) en vez de dejar un último grupo suelto con 1 sola persona.
+  const groupCount = Math.max(1, Math.round(shuffled.length / size));
+  const groups = Array.from({length: groupCount}, () => []);
+  shuffled.forEach((name, i) => groups[i % groupCount].push(name));
+
+  renderGroupResults(groups);
+  document.getElementById("groupModalTitle").textContent = `👥 Grupos — ${currentClass}`;
+  document.getElementById("groupModalBg").classList.add("show");
+  playDing();
+}
+function renderGroupResults(groups){
+  const box = document.getElementById("groupResults");
+  box.innerHTML = groups.map((g, i) => `
+    <div class="group-box" style="animation-delay:${i*0.06}s">
+      <div class="group-badge">Grupo ${i+1}</div>
+      <ul class="group-members">${g.map(n=>`<li>${n}</li>`).join("")}</ul>
+    </div>
+  `).join("");
+}
+function closeGroupModal(){
+  document.getElementById("groupModalBg").classList.remove("show");
+}
 function playTick(i){
   if(!state.settings.sound) return;
   try{
@@ -1266,6 +1375,7 @@ function renderAll(){
   renderPodio();
   renderCalendario();
   updateDrawStatus();
+  updateGroupStatus();
   renderNotReadyChips();
 }
 
