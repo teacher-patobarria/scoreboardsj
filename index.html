@@ -740,6 +740,20 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
         <button class="btn btn-ghost" onclick="toggleFullscreen()">🔳 Fullscreen</button>
       </div>
     </div>
+
+    <div class="card not-ready-card" id="notReadyEndCard">
+      <h3 style="margin:0 0 10px">⚠️ Students Who Did Not Finish</h3>
+      <p class="session-note" style="margin:0 0 12px" id="notReadyEndHint">Select a course above, then search and click a student's name to mark them as not finished today.</p>
+      <div class="nr-search-wrap">
+        <input type="text" id="notReadyEndSearch" class="nr-search" placeholder="🔍 Search student name..." oninput="renderNotReadyEndSuggestions()" onfocus="renderNotReadyEndSuggestions()" autocomplete="off">
+        <div class="nr-suggestions" id="notReadyEndSuggestions"></div>
+      </div>
+      <div class="nr-chips" id="notReadyEndChips"></div>
+      <div class="timer-controls" style="margin-top:16px">
+        <button class="btn btn-primary" onclick="giveWholeClassPointEnd()">✅ +1 to Everyone Except These</button>
+        <button class="btn btn-ghost" onclick="clearNotReadyEndList()">🗑️ Clear list</button>
+      </div>
+    </div>
   </section>
 
   <footer class="settings">
@@ -825,11 +839,13 @@ const ARIEL_CLASS_BLOCKS = {
 
 const GENERIC_BLOCKS = [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}];
 
-/* Los 3 motivos por los que se otorgan puntos (+2 cada uno, se puede repetir varias veces por clase). */
+/* Los motivos por los que se otorgan puntos manualmente (+2 cada uno, se puede repetir varias veces por clase).
+   El punto por "material listo" ya no se otorga manualmente aquí: ahora se da como +1 masivo
+   desde Class Preparation / End of Class (botón "+1 to Everyone Except These"), excluyendo
+   a los alumnos marcados en la lista de "no listos" de cada rutina. */
 const POINT_REASONS = [
   {code:"participacion", emoji:"🗣️", short:"Uso del inglés", label:"Participación y uso del inglés", c1:"#22d3ee", c2:"#7c3aed"},
   {code:"actitud",       emoji:"🌟", short:"Actitud",        label:"Comportamiento y actitud al final de la clase", c1:"#ffd166", c2:"#ff5d5d"},
-  {code:"inicio",        emoji:"📋", short:"Material listo", label:"Inicio de clase y material preparado sobre la mesa", c1:"#8ce99a", c2:"#22c55e"},
 ];
 function reasonInfo(code){ return POINT_REASONS.find(r=>r.code===code) || {emoji:"🎉", c1:"#8ce99a", c2:"#22c55e"}; }
 
@@ -974,6 +990,8 @@ function bootWorkspace(cfg){
   renderAll();
   loadNotReadyList();
   renderNotReadySuggestions();
+  loadNotReadyEndList();
+  renderNotReadyEndSuggestions();
 }
 
 let cloudListenerRef = null;
@@ -1394,8 +1412,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initClassStartUI();
   initClassEndUI();
   document.addEventListener("click", (e)=>{
-    const wrap = document.querySelector(".nr-search-wrap");
-    if(wrap && !wrap.contains(e.target)) hideNotReadySuggestions();
+    // Cierra cualquier dropdown de sugerencias (Class Preparation Y End of Class)
+    // cuyo cuadro de búsqueda no fue el que se clickeó.
+    document.querySelectorAll(".nr-search-wrap").forEach(wrap=>{
+      if(!wrap.contains(e.target)){
+        const list = wrap.querySelector(".nr-suggestions");
+        if(list) list.classList.remove("show");
+      }
+    });
   });
   resizeConfetti();
   setSyncBadge(false);
@@ -1417,6 +1441,8 @@ function setClass(c){
   renderAll();
   loadNotReadyList();
   renderNotReadySuggestions();
+  loadNotReadyEndList();
+  renderNotReadyEndSuggestions();
 }
 function bindTabs(){
   document.querySelectorAll("nav.tabs button").forEach(btn=>{
@@ -1449,6 +1475,7 @@ function renderAll(){
   updateDrawStatus();
   updateGroupStatus();
   renderNotReadyChips();
+  renderNotReadyEndChips();
 }
 
 /* ============ MARCADOR ============ */
@@ -2246,6 +2273,95 @@ function giveWholeClassPoint(){
   celebrate();
   renderAll();
   alert(`✅ +1 point given to ${given} student(s).${skipped ? " "+skipped+" student(s) skipped (not ready)." : ""}`);
+}
+
+/* ============ STUDENTS WHO DID NOT FINISH (End of Class) ============
+   Misma idea que la lista de "not ready" de Class Preparation, pero independiente:
+   otro Set, otra clave de localStorage y otro motivo ("fin_clase") para no mezclar
+   los registros de inicio de clase con los de cierre de clase. */
+let notReadyEndSelected = new Set();
+function notReadyEndKey(){ return "class_end_not_ready__" + (CURRENT_WORKSPACE_ID||"pato") + "__" + currentClass; }
+function loadNotReadyEndList(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(notReadyEndKey()) || "[]");
+    notReadyEndSelected = new Set(Array.isArray(raw) ? raw : []);
+  }catch(e){ notReadyEndSelected = new Set(); }
+  renderNotReadyEndChips();
+}
+function saveNotReadyEndListStorage(){
+  localStorage.setItem(notReadyEndKey(), JSON.stringify([...notReadyEndSelected]));
+}
+function addNotReadyEnd(id){
+  notReadyEndSelected.add(id);
+  saveNotReadyEndListStorage();
+  renderNotReadyEndChips();
+  const input = document.getElementById("notReadyEndSearch");
+  if(input){ input.value = ""; input.focus(); }
+  renderNotReadyEndSuggestions();
+}
+function removeNotReadyEnd(id){
+  notReadyEndSelected.delete(id);
+  saveNotReadyEndListStorage();
+  renderNotReadyEndChips();
+  renderNotReadyEndSuggestions();
+}
+function clearNotReadyEndList(){
+  notReadyEndSelected.clear();
+  saveNotReadyEndListStorage();
+  renderNotReadyEndChips();
+  renderNotReadyEndSuggestions();
+}
+function renderNotReadyEndChips(){
+  const box = document.getElementById("notReadyEndChips");
+  if(!box) return;
+  if(currentClass==="Todas" || !state){ box.innerHTML = ""; return; }
+  const items = [...notReadyEndSelected].map(id=>{
+    const st = state.students[id];
+    return st ? {id, name: st.name} : null;
+  }).filter(Boolean);
+  box.innerHTML = items.length ? items.map(it=>
+    `<span class="nr-chip">${it.name}<button onclick="removeNotReadyEnd('${it.id}')" title="Remove">✕</button></span>`
+  ).join("") : `<span style="color:var(--muted);font-size:12.5px">No students marked yet.</span>`;
+}
+function renderNotReadyEndSuggestions(){
+  const input = document.getElementById("notReadyEndSearch");
+  const list = document.getElementById("notReadyEndSuggestions");
+  const hint = document.getElementById("notReadyEndHint");
+  if(!input || !list) return;
+  if(currentClass==="Todas"){
+    list.classList.remove("show"); list.innerHTML = "";
+    input.disabled = true; input.placeholder = "Select a course above first...";
+    if(hint) hint.textContent = "Select a course above, then search and click a student's name to mark them as not finished today.";
+    return;
+  }
+  input.disabled = false; input.placeholder = "🔍 Search student name...";
+  if(hint) hint.textContent = "Search and click a student's name to mark them as not finished today.";
+  const q = input.value.trim().toLowerCase();
+  const roster = (CLASS_DATA[currentClass]||[]).map(name=>({id: currentClass+"::"+slug(name), name}))
+    .filter(s=>!notReadyEndSelected.has(s.id));
+  const matches = (q ? roster.filter(s=>s.name.toLowerCase().includes(q)) : roster).slice(0,8);
+  if(!matches.length){ list.classList.remove("show"); list.innerHTML = ""; return; }
+  list.innerHTML = matches.map(s=>`<div class="nr-suggestion-item" onclick="addNotReadyEnd('${s.id}')">${s.name}</div>`).join("");
+  list.classList.add("show");
+}
+function giveWholeClassPointEnd(){
+  if(currentClass==="Todas"){ alert("Select a course above first."); return; }
+  const roster = CLASS_DATA[currentClass] || [];
+  if(!roster.length){ alert("This course has no students registered."); return; }
+  let given = 0, skipped = 0;
+  roster.forEach(name=>{
+    const id = currentClass+"::"+slug(name);
+    const st = state.students[id];
+    if(!st) return;
+    if(notReadyEndSelected.has(id)){ skipped++; return; }
+    st.history.push({d: currentDate, t: Date.now(), p: 1, b: currentBloque, r: "fin_clase"});
+    given++;
+  });
+  save();
+  playFanfare();
+  celebrate();
+  renderAll();
+  alert(`✅ +1 point given to ${given} student(s).${skipped ? " "+skipped+" student(s) skipped (did not finish)." : ""}`);
 }
 
 /* ============ INICIO DE CLASE (Start of Class) ============ */
