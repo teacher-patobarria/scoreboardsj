@@ -16,7 +16,7 @@
   --bg1:#0b0f1e; --bg2:#161327; --card:#1b1836cc; --cardSolid:#1c1a35;
   --line:#2c2954; --text:#eef0ff; --muted:#9d9bc2;
   --gold:#ffd166; --silver:#d7dbe6; --bronze:#e0a458;
-  --c-1mb:#a855f7; --c-7a:#06b6d4; --c-7b:#22c55e; --c-8a:#f97316; --c-8b:#ec4899;
+  --c-1mb:#a855f7; --c-7a:#06b6d4; --c-7b:#22c55e; --c-8a:#f97316; --c-8b:#ec4899; --c-8c:#3b82f6;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -58,6 +58,7 @@ header.top{display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-conte
 .chip[data-cls="7B"].active{background:var(--c-7b)}
 .chip[data-cls="8A"].active{background:var(--c-8a)}
 .chip[data-cls="8B"].active{background:var(--c-8b)}
+.chip[data-cls="8C"].active{background:var(--c-8c)}
 
 nav.tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
 nav.tabs button{
@@ -108,6 +109,23 @@ nav.tabs button:hover{transform:translateY(-2px)}
 .btn-draw{background:linear-gradient(135deg,#ff5d5d,#ffd166); font-size:16px; padding:14px 26px; box-shadow:0 0 18px #ff5d5d55; animation:drawPulse 2.2s infinite}
 @keyframes drawPulse{0%,100%{box-shadow:0 0 12px #ff5d5d55; transform:scale(1)}50%{box-shadow:0 0 26px #ffd16699; transform:scale(1.03)}}
 .draw-modal{max-width:520px;text-align:center;background:linear-gradient(160deg,#1c1a35,#0b0f1e)}
+
+/* ===== VOICE POINTS ===== */
+.voice-card{margin-bottom:14px; border-color:#7c3aed55}
+.voice-status{display:none;align-items:center;gap:8px;font-size:12px;color:#ff5d5d;font-weight:800}
+.voice-status.active{display:flex}
+.voice-status .dot{width:9px;height:9px;border-radius:50%;background:#ff5d5d;animation:pulse .9s infinite;box-shadow:0 0 8px #ff5d5d}
+#voiceToggleBtn.voice-on{background:linear-gradient(135deg,#ff5d5d,#ffd166);color:#08081a;box-shadow:0 0 16px #ff5d5d55}
+.voice-toast{
+  position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-24px);
+  background:linear-gradient(135deg,#22d3ee,#7c3aed); color:#08081a; font-weight:900; font-size:16px;
+  padding:14px 22px; border-radius:16px; box-shadow:0 14px 34px #0009; z-index:1200;
+  display:flex; align-items:center; gap:14px; opacity:0; pointer-events:none; transition:.25s;
+  max-width:90vw; text-align:center;
+}
+.voice-toast.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto}
+.voice-toast button{background:#08081a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:800;cursor:pointer;font-size:13px;flex-shrink:0}
+.voice-toast button:hover{background:#221f45}
 .draw-stage{padding:26px 10px 10px}
 .draw-label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px;font-weight:800}
 .draw-name{font-size:34px;font-weight:900;min-height:60px;display:flex;align-items:center;justify-content:center;line-height:1.2}
@@ -492,6 +510,19 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       </div>
     </div>
 
+    <div class="card voice-card">
+      <div class="draw-card-row">
+        <div>
+          <h3 style="margin:0 0 4px">🎤 Puntos por voz</h3>
+          <p class="session-note" style="margin:0" id="voiceHint">Selecciona un curso, actívalo, y di en voz alta: "Marcador, [nombre del alumno], más dos".</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span class="voice-status" id="voiceStatus"><span class="dot"></span>Escuchando…</span>
+          <button class="btn btn-primary" id="voiceToggleBtn" onclick="toggleVoiceListening()">🎤 Puntos por voz: OFF</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="toolbar">
         <input type="text" id="search" placeholder="🔍 Buscar estudiante...">
@@ -679,6 +710,15 @@ const CARLOS_CLASS_BLOCKS = {
   "7C": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
 };
 
+const ARIEL_CLASS_DATA = {
+"8C": ["Alvarado Jerez Antonia Trinidad","Barría Inzulza Clemente Nicolás","Cabrera Díaz Isabella","Carrasco Arias Leonor Josefa","Corbett Gutierrez Samantha Antonella","Díaz Lantaño Juan Pablo","Díaz Riffo Luciano Andrés","Ferrada Ros Rafael","Gaete Vignes Agustina Francisca","Godoy Meniconi Rafael Hernan","Godoy Rodríguez Ignacia Alejandra","Gómez Benavides Agustín Ignacio","Guerra Torres Magdalena Beatriz","Lazo Valdenegro Emilia Paz","Lillo López Rosario Antonia","Maineri Tramon Pedro Alonso","Maragaño Rosas Emilia Isidora","Mena Asencio Agustín Mateo","Merino Rawlins Matilda Ignacia","Montoya Ojeda Matías Alejandro","Moreno Chaparro Hensber Alejandro","Ojeda Maldonado Benjamín Andrés","Oñate Montory Juan Alberto","Paredes Gallardo Gaspar Eduardo","Paulone Cortez Lorenzo Agustín","Rivas Villarroel Tomás Alejandro","Rivera Martínez Deyanira Moncerrat","Roldán Rojas Quimey","Roselló Pavón Julieta","Ruiz Paez Florencia Carolina","Salas Olivares Renato Ignacio","Schafer Bohle Juan José","Silva González Gustavo Alonso","Solís Inostroza Sebastián Alonso","Toledo Chávez Catalina Francisca","Vallejos Moral Laura María","Vera Díaz Luciano Andrés","Westermeier Villarroel Martina Ignacia"]
+};
+const ARIEL_CLASS_LIST = ["8C"];
+const ARIEL_CLASS_COLOR = {"8C":"#3b82f6"};
+const ARIEL_CLASS_BLOCKS = {
+  "8C": [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}],
+};
+
 const GENERIC_BLOCKS = [{id:"B1",label:"Bloque 1 · 1:20 hrs"},{id:"B2",label:"Bloque 2 · 1:20 hrs"},{id:"B3",label:"Bloque 3 · 40 min"}];
 
 /* Los 3 motivos por los que se otorgan puntos (+2 cada uno, se puede repetir varias veces por clase). */
@@ -706,6 +746,14 @@ const TEACHERS = {
     classData: CARLOS_CLASS_DATA,
     classColor: CARLOS_CLASS_COLOR,
     classBlocks: CARLOS_CLASS_BLOCKS
+  },
+  "ariel.aguero@colsanjavier.cl": {
+    workspaceId: "ariel",
+    label: "Ariel Agüero",
+    classList: ARIEL_CLASS_LIST,
+    classData: ARIEL_CLASS_DATA,
+    classColor: ARIEL_CLASS_COLOR,
+    classBlocks: ARIEL_CLASS_BLOCKS
   }
 };
 const DEFAULT_TEACHER_EMAIL = "patricio.barria@colsanjavier.cl";
@@ -803,6 +851,7 @@ function ensureFirebaseApp(){
 /* Aplica el "espacio de trabajo" del profesor que inició sesión: sus cursos, su guardado local
    y su ruta propia en Firebase. Se llama una vez resuelto el login (o de inmediato en modo local). */
 function bootWorkspace(cfg){
+  if(typeof stopVoiceListening === "function") stopVoiceListening();
   CLASS_LIST = cfg.classList;
   CLASS_DATA = cfg.classData;
   CLASS_COLOR = cfg.classColor;
@@ -921,6 +970,7 @@ function doLogin(evt){
 }
 function doLogout(){
   if(!confirm("¿Cerrar sesión?")) return;
+  if(typeof stopVoiceListening === "function") stopVoiceListening();
   firebase.auth().signOut();
 }
 function scheduleCloudPush(){
@@ -1299,6 +1349,135 @@ function undoLast(id){
   st.history.pop();
   save();
   renderAll();
+}
+
+/* ============ PUNTOS POR VOZ ============
+   Usa la Web Speech API del navegador (funciona en Chrome; no está disponible en todos
+   los navegadores). No existe forma confiable de reconocer "solo tu voz" — ninguna app
+   web puede hacer biometría de voz de forma robusta sin un servidor y modelos pesados,
+   y en una sala ruidosa igual fallaría. En su lugar, usamos una "palabra clave" (como
+   hacen los asistentes de voz tipo Alexa/Google): solo procesa un comando si escucha
+   la palabra "marcador" seguida de un nombre real del curso seleccionado y "más uno"/
+   "más dos". Esto hace muy difícil que un grito aleatorio de un alumno agregue puntos
+   por accidente. Cada punto agregado muestra un aviso grande en pantalla con botón
+   "Deshacer" para corregir al instante si se escuchó mal. */
+let voiceRecognition = null;
+let voiceListening = false;
+function getSpeechRecognitionClass(){ return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+function initVoiceRecognition(){
+  const SR = getSpeechRecognitionClass();
+  if(!SR) return null;
+  const rec = new SR();
+  rec.lang = "es-CL";
+  rec.continuous = true;
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  rec.onresult = (e)=>{
+    for(let i=e.resultIndex; i<e.results.length; i++){
+      if(e.results[i].isFinal){
+        handleVoiceTranscript(e.results[i][0].transcript);
+      }
+    }
+  };
+  rec.onerror = (e)=>{
+    if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+      voiceListening = false;
+      updateVoiceUI();
+      alert("Se denegó el permiso del micrófono. Actívalo desde la configuración del navegador (ícono de candado junto a la dirección web) para usar Puntos por voz.");
+    }
+    // otros errores (ej. "no-speech") se ignoran: onend reintentará solo mientras voiceListening siga en true
+  };
+  rec.onend = ()=>{
+    if(voiceListening){
+      try{ rec.start(); }catch(e){}
+    }
+  };
+  return rec;
+}
+function toggleVoiceListening(){
+  if(voiceListening){ stopVoiceListening(); return; }
+  if(currentClass==="Todas"){ alert("Selecciona un curso arriba antes de activar Puntos por voz."); return; }
+  const SR = getSpeechRecognitionClass();
+  if(!SR){ alert("Tu navegador no soporta reconocimiento de voz. Usa Google Chrome en este computador para usar Puntos por voz."); return; }
+  if(!voiceRecognition) voiceRecognition = initVoiceRecognition();
+  try{
+    voiceRecognition.start();
+    voiceListening = true;
+    updateVoiceUI();
+  }catch(e){ console.warn("No se pudo iniciar el reconocimiento de voz", e); }
+}
+function stopVoiceListening(){
+  voiceListening = false;
+  if(voiceRecognition){ try{ voiceRecognition.stop(); }catch(e){} }
+  updateVoiceUI();
+}
+function updateVoiceUI(){
+  const btn = document.getElementById("voiceToggleBtn");
+  const status = document.getElementById("voiceStatus");
+  if(btn){
+    btn.classList.toggle("voice-on", voiceListening);
+    btn.textContent = voiceListening ? "🎤 Puntos por voz: ON" : "🎤 Puntos por voz: OFF";
+  }
+  if(status) status.classList.toggle("active", voiceListening);
+}
+const VOICE_WAKE_WORD = "marcador";
+const VOICE_STOPWORDS = new Set(["marcador","mas","más","uno","dos","punto","puntos","para","de","del","la","el","a"]);
+function handleVoiceTranscript(rawTranscript){
+  const tokens = slug(rawTranscript).split("-").filter(Boolean);
+  if(!tokens.includes(VOICE_WAKE_WORD)) return; // no es un comando, sigue escuchando
+  if(currentClass==="Todas"){ showVoiceToast("⚠️ Selecciona un curso arriba primero", null); return; }
+
+  let points = null;
+  if(tokens.includes("uno") || tokens.includes("1")) points = 1;
+  if(tokens.includes("dos") || tokens.includes("2")) points = 2;
+
+  const nameTokens = tokens.filter(t=>!VOICE_STOPWORDS.has(t) && t.length>=3);
+  const roster = (CLASS_DATA[currentClass]||[]).map(name=>{
+    const id = currentClass+"::"+slug(name);
+    const tk = slug(name).split("-").filter(Boolean);
+    return {id, name, tk};
+  });
+  let best=null, bestScore=0, tie=false;
+  roster.forEach(s=>{
+    const score = s.tk.filter(t=>nameTokens.includes(t)).length;
+    if(score>bestScore){ bestScore=score; best=s; tie=false; }
+    else if(score===bestScore && score>0){ tie=true; }
+  });
+
+  if(!best || bestScore===0){ showVoiceToast('❓ No reconocí un nombre de estudiante. Intenta de nuevo.', null); return; }
+  if(tie){ showVoiceToast('❓ Hay más de un estudiante parecido — di el nombre completo.', null); return; }
+  if(points===null){ showVoiceToast(`❓ Escuché a "${best.name}" pero no "más uno" o "más dos".`, null); return; }
+
+  const st = state.students[best.id];
+  if(!st) return;
+  st.history.push({d: currentDate, t: Date.now(), p: points, b: currentBloque, r: "participacion"});
+  save();
+  playDing();
+  renderAll();
+  showVoiceToast(`✅ +${points} a ${best.name}`, best.id);
+}
+let voiceToastTimer = null;
+function showVoiceToast(msg, undoId){
+  let el = document.getElementById("voiceToast");
+  if(!el){
+    el = document.createElement("div");
+    el.id = "voiceToast";
+    el.className = "voice-toast";
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<span>${msg}</span>` + (undoId ? `<button onclick="undoVoicePoint('${undoId}')">Deshacer</button>` : "");
+  el.classList.add("show");
+  clearTimeout(voiceToastTimer);
+  voiceToastTimer = setTimeout(()=>{ el.classList.remove("show"); }, 3500);
+}
+function undoVoicePoint(id){
+  const st = state.students[id];
+  if(!st || !st.history.length) return;
+  st.history.pop();
+  save();
+  renderAll();
+  const el = document.getElementById("voiceToast");
+  if(el) el.classList.remove("show");
 }
 
 /* sound */
