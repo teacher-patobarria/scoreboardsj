@@ -69,6 +69,17 @@ nav.tabs button{
 nav.tabs button.active{background:linear-gradient(135deg,#7c3aed,#22d3ee); color:#08081a; border-color:transparent; box-shadow:0 10px 26px #22d3ee33}
 nav.tabs button:hover{transform:translateY(-2px)}
 
+nav.subtabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+nav.subtabs button{
+  flex:1; min-width:150px; padding:10px 10px; border-radius:12px; border:1px solid var(--line);
+  background:#151230a0; color:var(--text); font-weight:800; font-size:13px; cursor:pointer;
+  transition:.15s;
+}
+nav.subtabs button.active{background:linear-gradient(135deg,#22c55e,#22d3ee); color:#08081a; border-color:transparent; box-shadow:0 8px 22px #22c55e33}
+nav.subtabs button:hover{transform:translateY(-2px)}
+.toolpane{display:none}
+.toolpane.active{display:block; animation:fadeIn .25s ease}
+
 .card{
   background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px;
   backdrop-filter:blur(6px); box-shadow:0 10px 30px #0006;
@@ -319,11 +330,13 @@ video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:
    el título quedaba empujado fuera de la pantalla visible. */
 body.fs-active header.top,
 body.fs-active nav.tabs,
+body.fs-active nav.subtabs,
 body.fs-active footer.settings,
 body.fs-active > .app > .hint,
 body.fs-active .not-ready-card{ display:none !important; }
 body.fs-active .app{max-width:100%;padding:0;display:flex;min-height:100vh}
 body.fs-active .section.active{display:flex !important;flex:1;align-items:center;justify-content:center;width:100%;overflow:auto;padding:2vmin}
+body.fs-active .toolpane.active{display:flex !important;flex-direction:column;align-items:center;justify-content:center;width:100%}
 body.fs-active .start-wrap{width:100%;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
 body.fs-active .card{border:none;background:transparent;box-shadow:none;backdrop-filter:none;padding:2vmin}
 body.fs-active .start-title{font-size:min(7vmin,64px);margin:0 0 1vmin}
@@ -420,8 +433,8 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <button data-tab="inicio" class="active">🎯 Class Preparation</button>
     <button data-tab="marcador">📊 Marcador</button>
     <button data-tab="podio">🥇 Podio</button>
-    <button data-tab="calendario">📅 Calendario</button>
-    <button data-tab="timer">⏱️ Timer</button>
+    <button data-tab="herramientas">🧰 Herramientas</button>
+    <button data-tab="finclase">🔔 End of Class</button>
   </nav>
 
   <!-- CLASS PREPARATION -->
@@ -512,49 +525,6 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       <p class="session-note">Cada punto que otorgues abajo queda guardado en la fecha y bloque seleccionados. Cambia de bloque al empezar una nueva clase; usa "Historial" para revisar una sesión anterior.</p>
     </div>
 
-    <div class="card draw-card">
-      <div class="draw-card-row">
-        <div>
-          <h3 style="margin:0 0 4px">🎲 Estudiante al azar</h3>
-          <p class="session-note" style="margin:0" id="drawStatus">Selecciona un curso para sortear</p>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="resetDrawPool()">🔄 Reiniciar sorteo</button>
-          <button class="btn btn-draw" onclick="startRandomDraw()">🎯 ¡Sacar al azar!</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card group-card">
-      <div class="draw-card-row">
-        <div>
-          <h3 style="margin:0 0 4px">👥 Grupos al azar</h3>
-          <p class="session-note" style="margin:0" id="groupStatus">Selecciona un curso para formar grupos</p>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <div class="group-size-picker" id="groupSizePicker">
-            <button class="size-btn active" data-size="2" onclick="setGroupSize(2)">👫 Parejas</button>
-            <button class="size-btn" data-size="4" onclick="setGroupSize(4)">👨‍👩‍👧‍👦 Grupos de 4</button>
-            <input type="number" id="groupCustomSize" class="size-custom" min="2" max="30" placeholder="N°" title="Tamaño personalizado" onfocus="setGroupSize('custom')" oninput="setGroupSize('custom')">
-          </div>
-          <button class="btn btn-draw" onclick="startRandomGroups()">🎲 ¡Formar grupos!</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card voice-card">
-      <div class="draw-card-row">
-        <div>
-          <h3 style="margin:0 0 4px">🎤 Puntos por voz</h3>
-          <p class="session-note" style="margin:0" id="voiceHint">Selecciona un curso, actívalo, y di en voz alta: "Marcador, [nombre del alumno], más dos".</p>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <span class="voice-status" id="voiceStatus"><span class="dot"></span>Escuchando…</span>
-          <button class="btn btn-primary" id="voiceToggleBtn" onclick="toggleVoiceListening()">🎤 Puntos por voz: OFF</button>
-        </div>
-      </div>
-    </div>
-
     <div class="card">
       <div class="toolbar">
         <input type="text" id="search" placeholder="🔍 Buscar estudiante...">
@@ -621,63 +591,153 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     </div>
   </section>
 
-  <!-- CALENDARIO -->
-  <section id="tab-calendario" class="section">
-    <div class="card">
-      <h3 style="margin-top:0">📈 Esta semana (Lun–Vie) <span id="calClassLabel" style="color:var(--muted);font-weight:400;font-size:13px"></span></h3>
-      <div class="weekchart" id="weekchart"></div>
+  <!-- HERRAMIENTAS -->
+  <section id="tab-herramientas" class="section">
+    <nav class="subtabs" id="toolTabs">
+      <button data-tool="timer" class="active">⏱️ Timer</button>
+      <button data-tool="calendario">📅 Calendario</button>
+      <button data-tool="grupos">👥 Grupos y parejas</button>
+      <button data-tool="sorteo">🎲 Estudiante al azar</button>
+      <button data-tool="voz">🎤 Puntos por voz</button>
+    </nav>
 
-      <div class="cal-head">
-        <div class="cal-nav">
-          <button class="btn btn-ghost" onclick="changeMonth(-1)">‹</button>
-          <b id="monthLabel" style="min-width:150px;text-align:center;display:inline-block"></b>
-          <button class="btn btn-ghost" onclick="changeMonth(1)">›</button>
+    <div id="tool-timer" class="toolpane active">
+      <div class="card timer-wrap">
+        <div class="timer-modes">
+          <button class="btn btn-ghost" id="modeCountdown" onclick="setTimerMode('countdown')">⏳ Cuenta regresiva</button>
+          <button class="btn btn-ghost" id="modeStopwatch" onclick="setTimerMode('stopwatch')">⏱️ Cronómetro</button>
         </div>
-        <button class="btn btn-ghost" onclick="goToday()">Hoy</button>
+        <div class="timer-stepper" id="timerStepper">
+          <button class="btn stepper-btn" onclick="adjustTimer(-60)">− 1 min</button>
+          <button class="btn stepper-btn stepper-small" onclick="adjustTimer(-10)">−10s</button>
+          <div class="timer-display" id="timerDisplay">00:00</div>
+          <button class="btn stepper-btn stepper-small" onclick="adjustTimer(10)">+10s</button>
+          <button class="btn stepper-btn" onclick="adjustTimer(60)">+ 1 min</button>
+        </div>
+        <div class="timer-progress-wrap" id="timerProgressWrap">
+          <div class="timer-progress-bar" id="timerProgressBar"></div>
+        </div>
+
+        <div class="custom-time" id="customTimeRow">
+          <input type="number" id="customMin" min="0" max="180" value="1"> min
+          <input type="number" id="customSec" min="0" max="59" value="0"> seg
+          <button class="btn btn-ghost" onclick="setCustomTime()">Fijar</button>
+        </div>
+
+        <div class="presets" id="presets">
+          <button class="btn btn-ghost" onclick="setPreset(60)">1 min</button>
+          <button class="btn btn-ghost" onclick="setPreset(180)">3 min</button>
+          <button class="btn btn-ghost" onclick="setPreset(300)">5 min</button>
+          <button class="btn btn-ghost" onclick="setPreset(600)">10 min</button>
+          <button class="btn btn-ghost" onclick="setPreset(2400)">40 min (bloque corto)</button>
+          <button class="btn btn-ghost" onclick="setPreset(4800)">1:20 hrs (bloque largo)</button>
+        </div>
+
+        <div class="timer-controls">
+          <button class="btn btn-primary" id="startBtn" onclick="startTimer()">▶ Iniciar</button>
+          <button class="btn btn-ghost" onclick="pauseTimer()">⏸ Pausar</button>
+          <button class="btn btn-ghost" onclick="resetTimer()">⟲ Reiniciar</button>
+          <button class="btn btn-ghost" onclick="toggleFullscreen()">🔳 Pantalla completa</button>
+          <button class="btn btn-ghost" id="muteBtn" onclick="toggleMute()">🔊</button>
+        </div>
       </div>
-      <div class="calgrid" id="calgrid"></div>
+    </div>
+
+    <div id="tool-calendario" class="toolpane">
+      <div class="card">
+        <h3 style="margin-top:0">📈 Esta semana (Lun–Vie) <span id="calClassLabel" style="color:var(--muted);font-weight:400;font-size:13px"></span></h3>
+        <div class="weekchart" id="weekchart"></div>
+
+        <div class="cal-head">
+          <div class="cal-nav">
+            <button class="btn btn-ghost" onclick="changeMonth(-1)">‹</button>
+            <b id="monthLabel" style="min-width:150px;text-align:center;display:inline-block"></b>
+            <button class="btn btn-ghost" onclick="changeMonth(1)">›</button>
+          </div>
+          <button class="btn btn-ghost" onclick="goToday()">Hoy</button>
+        </div>
+        <div class="calgrid" id="calgrid"></div>
+      </div>
+    </div>
+
+    <div id="tool-grupos" class="toolpane">
+      <div class="card group-card">
+        <div class="draw-card-row">
+          <div>
+            <h3 style="margin:0 0 4px">👥 Grupos al azar</h3>
+            <p class="session-note" style="margin:0" id="groupStatus">Selecciona un curso para formar grupos</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <div class="group-size-picker" id="groupSizePicker">
+              <button class="size-btn active" data-size="2" onclick="setGroupSize(2)">👫 Parejas</button>
+              <button class="size-btn" data-size="4" onclick="setGroupSize(4)">👨‍👩‍👧‍👦 Grupos de 4</button>
+              <input type="number" id="groupCustomSize" class="size-custom" min="2" max="30" placeholder="N°" title="Tamaño personalizado" onfocus="setGroupSize('custom')" oninput="setGroupSize('custom')">
+            </div>
+            <button class="btn btn-draw" onclick="startRandomGroups()">🎲 ¡Formar grupos!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tool-sorteo" class="toolpane">
+      <div class="card draw-card">
+        <div class="draw-card-row">
+          <div>
+            <h3 style="margin:0 0 4px">🎲 Estudiante al azar</h3>
+            <p class="session-note" style="margin:0" id="drawStatus">Selecciona un curso para sortear</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="resetDrawPool()">🔄 Reiniciar sorteo</button>
+            <button class="btn btn-draw" onclick="startRandomDraw()">🎯 ¡Sacar al azar!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tool-voz" class="toolpane">
+      <div class="card voice-card">
+        <div class="draw-card-row">
+          <div>
+            <h3 style="margin:0 0 4px">🎤 Puntos por voz</h3>
+            <p class="session-note" style="margin:0" id="voiceHint">Selecciona un curso, actívalo, y di en voz alta: "Marcador, [nombre del alumno], más dos".</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span class="voice-status" id="voiceStatus"><span class="dot"></span>Escuchando…</span>
+            <button class="btn btn-primary" id="voiceToggleBtn" onclick="toggleVoiceListening()">🎤 Puntos por voz: OFF</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- TIMER -->
-  <section id="tab-timer" class="section">
-    <div class="card timer-wrap">
-      <div class="timer-modes">
-        <button class="btn btn-ghost" id="modeCountdown" onclick="setTimerMode('countdown')">⏳ Cuenta regresiva</button>
-        <button class="btn btn-ghost" id="modeStopwatch" onclick="setTimerMode('stopwatch')">⏱️ Cronómetro</button>
-      </div>
-      <div class="timer-stepper" id="timerStepper">
-        <button class="btn stepper-btn" onclick="adjustTimer(-60)">− 1 min</button>
-        <button class="btn stepper-btn stepper-small" onclick="adjustTimer(-10)">−10s</button>
-        <div class="timer-display" id="timerDisplay">00:00</div>
-        <button class="btn stepper-btn stepper-small" onclick="adjustTimer(10)">+10s</button>
-        <button class="btn stepper-btn" onclick="adjustTimer(60)">+ 1 min</button>
-      </div>
-      <div class="timer-progress-wrap" id="timerProgressWrap">
-        <div class="timer-progress-bar" id="timerProgressBar"></div>
+  <!-- END OF CLASS -->
+  <section id="tab-finclase" class="section">
+    <div class="card start-wrap" id="endCard">
+      <h2 class="start-title">🔔 END OF CLASS</h2>
+      <p class="start-sub">Press Start and follow the steps together as a class.</p>
+
+      <div class="start-steps">
+        <div class="start-step" id="endStep1">
+          <div class="step-circle" id="endStepCircle1">1</div>
+          <div class="step-label">📦 Materials Away</div>
+        </div>
+        <div class="start-line" id="endLine"></div>
+        <div class="start-step" id="endStep2">
+          <div class="step-circle" id="endStepCircle2">2</div>
+          <div class="step-label">📘 Next Class Ready</div>
+        </div>
       </div>
 
-      <div class="custom-time" id="customTimeRow">
-        <input type="number" id="customMin" min="0" max="180" value="1"> min
-        <input type="number" id="customSec" min="0" max="59" value="0"> seg
-        <button class="btn btn-ghost" onclick="setCustomTime()">Fijar</button>
+      <div class="start-phase-label" id="endPhaseLabel">Press Start to begin</div>
+      <div class="timer-display" id="endDisplay">01:00</div>
+      <div class="timer-progress-wrap" id="endProgressWrap">
+        <div class="timer-progress-bar" id="endProgressBar"></div>
       </div>
 
-      <div class="presets" id="presets">
-        <button class="btn btn-ghost" onclick="setPreset(60)">1 min</button>
-        <button class="btn btn-ghost" onclick="setPreset(180)">3 min</button>
-        <button class="btn btn-ghost" onclick="setPreset(300)">5 min</button>
-        <button class="btn btn-ghost" onclick="setPreset(600)">10 min</button>
-        <button class="btn btn-ghost" onclick="setPreset(2400)">40 min (bloque corto)</button>
-        <button class="btn btn-ghost" onclick="setPreset(4800)">1:20 hrs (bloque largo)</button>
-      </div>
-
-      <div class="timer-controls">
-        <button class="btn btn-primary" id="startBtn" onclick="startTimer()">▶ Iniciar</button>
-        <button class="btn btn-ghost" onclick="pauseTimer()">⏸ Pausar</button>
-        <button class="btn btn-ghost" onclick="resetTimer()">⟲ Reiniciar</button>
-        <button class="btn btn-ghost" onclick="toggleFullscreen()">⛶ Pantalla completa</button>
-        <button class="btn btn-ghost" id="muteBtn" onclick="toggleMute()">🔊</button>
+      <div class="timer-controls" style="margin-top:20px">
+        <button class="btn btn-primary" id="endRoutineBtn" onclick="startClassEndRoutine()">▶ Start</button>
+        <button class="btn btn-ghost" onclick="resetClassEndRoutine()">⟲ Reset</button>
+        <button class="btn btn-ghost" onclick="toggleFullscreen()">🔳 Fullscreen</button>
       </div>
     </div>
   </section>
@@ -1325,12 +1385,14 @@ function levelInfo(total){
 /* ============ INIT ============ */
 document.addEventListener("DOMContentLoaded", ()=>{
   bindTabs();
+  bindToolTabs();
   document.getElementById("search").addEventListener("input", renderMarcador);
   document.getElementById("sortBy").addEventListener("change", renderMarcador);
   document.getElementById("claseFecha").addEventListener("change", onDateOrBloqueChange);
   document.getElementById("claseBloque").addEventListener("change", onDateOrBloqueChange);
   initTimerUI();
   initClassStartUI();
+  initClassEndUI();
   document.addEventListener("click", (e)=>{
     const wrap = document.querySelector(".nr-search-wrap");
     if(wrap && !wrap.contains(e.target)) hideNotReadySuggestions();
@@ -1366,6 +1428,16 @@ function bindTabs(){
       document.getElementById("tab-"+currentTab).classList.add("active");
       renderAll();
       if(currentTab!=="podio") stopCamera();
+    });
+  });
+}
+function bindToolTabs(){
+  document.querySelectorAll("nav.subtabs button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll("nav.subtabs button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".toolpane").forEach(p=>p.classList.remove("active"));
+      document.getElementById("tool-"+btn.dataset.tool).classList.add("active");
     });
   });
 }
@@ -2263,6 +2335,80 @@ function playBell(){
     });
   }catch(e){}
 }
+
+/* ============ END OF CLASS ============
+   Mismo modelo que Class Preparation (2 pasos de 1 minuto con check + barra neón),
+   pero con su propio estado independiente para que no interfiera con Class Preparation. */
+let classEndPhase = 0; // 0 idle, 1 = paso 1, 2 = paso 2, 3 = terminado
+let classEndRemaining = 60;
+let classEndInterval = null;
+const END_PHASES = [
+  {label:"📦 Step 1: Put away your English materials!", secs:60},
+  {label:"📘 Step 2: Get out your materials for your next class!", secs:60},
+];
+function initClassEndUI(){ updateEndUI(); }
+function updateEndUI(){
+  const displayEl = document.getElementById("endDisplay");
+  const barEl = document.getElementById("endProgressBar");
+  const labelEl = document.getElementById("endPhaseLabel");
+  const s1 = document.getElementById("endStep1"), s2 = document.getElementById("endStep2");
+  const c1 = document.getElementById("endStepCircle1"), c2 = document.getElementById("endStepCircle2");
+  const line = document.getElementById("endLine");
+  if(!displayEl) return;
+
+  displayEl.textContent = fmt(classEndRemaining);
+  const totalForPhase = (classEndPhase===1 || classEndPhase===2) ? END_PHASES[classEndPhase-1].secs : 60;
+  const pct = Math.max(0, Math.min(100, classEndRemaining/totalForPhase*100));
+  barEl.style.width = pct+"%";
+  const danger = classEndRemaining<=10 && classEndPhase>0 && classEndPhase<3;
+  barEl.classList.toggle("danger", danger);
+  displayEl.classList.toggle("danger", danger);
+
+  if(classEndPhase===0){ labelEl.textContent = "Press Start to begin"; labelEl.classList.remove("done-msg"); }
+  else if(classEndPhase===3){ labelEl.textContent = "🔔 Class is over. See you next time! 👋"; labelEl.classList.add("done-msg"); }
+  else { labelEl.textContent = END_PHASES[classEndPhase-1].label; labelEl.classList.remove("done-msg"); }
+
+  s1.classList.toggle("active", classEndPhase===1);
+  s1.classList.toggle("done", classEndPhase>=2);
+  c1.textContent = classEndPhase>=2 ? "✓" : "1";
+  s2.classList.toggle("active", classEndPhase===2);
+  s2.classList.toggle("done", classEndPhase>=3);
+  c2.textContent = classEndPhase>=3 ? "✓" : "2";
+  line.classList.toggle("done", classEndPhase>=2);
+}
+function startClassEndRoutine(){
+  clearInterval(classEndInterval);
+  classEndPhase = 1;
+  classEndRemaining = END_PHASES[0].secs;
+  updateEndUI();
+  classEndInterval = setInterval(()=>{
+    classEndRemaining--;
+    if(classEndRemaining<=0){
+      if(classEndPhase===1){
+        classEndPhase = 2;
+        classEndRemaining = END_PHASES[1].secs;
+        playDing();
+        updateEndUI();
+      } else {
+        clearInterval(classEndInterval);
+        classEndPhase = 3;
+        classEndRemaining = 0;
+        updateEndUI();
+        playBell();
+        celebrate();
+      }
+    } else {
+      updateEndUI();
+    }
+  },1000);
+}
+function resetClassEndRoutine(){
+  clearInterval(classEndInterval);
+  classEndPhase = 0;
+  classEndRemaining = 60;
+  updateEndUI();
+}
+
 function toggleMute(){
   state.settings.sound = !state.settings.sound;
   document.getElementById("muteBtn").textContent = state.settings.sound ? "🔊" : "🔇";
