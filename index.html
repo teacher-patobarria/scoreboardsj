@@ -361,6 +361,10 @@ body.fs-active .stepper-btn{font-size:min(2vmin,18px);padding:min(1.6vmin,16px) 
 .modal h3{margin-top:0}
 .modal-close{float:right;cursor:pointer;background:none;border:none;color:var(--muted);font-size:18px}
 .event-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.cloud-backup-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.cloud-backup-item:last-child{border-bottom:none}
+.cloud-backup-item .cbi-info{display:flex;flex-direction:column;gap:2px}
+.cloud-backup-item .cbi-reason{color:var(--muted);font-size:11px}
 
 /* ===== POPUP DE BIENVENIDA / FUNCIONES (una vez al día) ===== */
 .modal.features-modal{max-width:780px;padding:26px 26px 22px}
@@ -778,9 +782,10 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <button class="btn btn-ghost" onclick="exportCSV()">⬇️ Exportar CSV</button>
     <button class="btn btn-ghost" onclick="backupJSON()">💾 Respaldar datos</button>
     <label class="btn btn-ghost" style="cursor:pointer">📤 Restaurar datos<input type="file" accept=".json" id="restoreInput" style="display:none" onchange="restoreJSON(event)"></label>
+    <button class="btn btn-ghost" onclick="openCloudBackupModal()">☁️ Restaurar respaldo automático</button>
     <button class="btn btn-danger" onclick="resetPoints()">🗑️ Reiniciar puntajes</button>
   </footer>
-  <p class="hint">Los datos se guardan automáticamente en este computador/navegador. Usa "Respaldar datos" de vez en cuando para no perder el historial.</p>
+  <p class="hint">Los datos se guardan automáticamente en este computador/navegador. Usa "Respaldar datos" de vez en cuando para no perder el historial. La app también guarda respaldos automáticos en la nube cada día y justo antes de cualquier reinicio — puedes recuperarlos con "☁️ Restaurar respaldo automático".</p>
 </div>
 
 <div class="modal-bg" id="dayModalBg">
@@ -788,6 +793,15 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <button class="modal-close" onclick="closeModal()">✕</button>
     <h3 id="modalTitle">Detalle del día</h3>
     <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="cloudBackupModalBg">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCloudBackupModal()">✕</button>
+    <h3>☁️ Respaldos automáticos en la nube</h3>
+    <p class="hint" style="margin-top:-6px">Se guarda uno cada día y otro justo antes de cualquier "Reiniciar puntajes" o "Restaurar datos". Elige uno para volver a ese momento.</p>
+    <div id="cloudBackupList"><p class="hint">Cargando...</p></div>
   </div>
 </div>
 
@@ -1267,6 +1281,11 @@ function initCloudSync(){
       }else if(firstSnapshot){
         // No hay nada en la nube todavía para este espacio (primera vez) — inicializamos con lo local.
         save();
+      }
+      if(firstSnapshot){
+        // Ya tenemos el estado verdadero (recién sincronizado) — este es el momento correcto
+        // para el respaldo automático del día, antes de que el profesor toque nada.
+        maybeAutoDailyBackup();
       }
       firstSnapshot = false;
       setSyncBadge(true);
@@ -2960,6 +2979,7 @@ function restoreJSON(evt){
     try{
       const data = JSON.parse(reader.result);
       if(!data.students) throw new Error("formato inválido");
+      backupToCloud("restore_manual"); // por si el archivo subido es el equivocado, queda guardado lo que había antes
       state = hydrateState(data);
       save();
       renderAll(); renderGallery();
@@ -2969,11 +2989,86 @@ function restoreJSON(evt){
   reader.readAsText(file);
   evt.target.value="";
 }
+/* ============ RESPALDOS AUTOMÁTICOS EN LA NUBE ============
+   Se guarda una copia completa del estado, en una rama separada de Firebase
+   (scoreboard_state_backups/<workspaceId>/...), en dos momentos:
+   1) Una vez al día, la primera vez que se abre la app ese día (ver maybeAutoDailyBackup).
+   2) Justo ANTES de cualquier acción destructiva (reiniciar puntajes, restaurar un archivo),
+      por si esa acción fue un error y hay que deshacerla.
+   Esto existe porque un alumno alcanzó a apretar "Reiniciar puntajes" con la sesión de un
+   profesor abierta y no había ningún respaldo — no vuelve a pasar sin dejar rastro. */
+function backupToCloud(reason){
+  if(!CLOUD_SYNC_ENABLED || !fbDb || !state) return; // sin conexión: no se puede respaldar en la nube ahora mismo
+  try{
+    const ts = Date.now();
+    const snapshot = JSON.parse(JSON.stringify(state));
+    snapshot._backupAt = ts;
+    snapshot._backupReason = reason;
+    fbDb.ref("scoreboard_state_backups/" + CURRENT_WORKSPACE_ID + "/" + ts).set(snapshot)
+      .catch(e=>console.error("No se pudo guardar el respaldo automático", e));
+  }catch(e){ console.error(e); }
+}
+function maybeAutoDailyBackup(){
+  if(!CLOUD_SYNC_ENABLED || !fbDb || !state) return;
+  const key = "cloud_backup_daily_done__" + CURRENT_WORKSPACE_ID + "__" + todayStr();
+  try{ if(localStorage.getItem(key)) return; localStorage.setItem(key, "1"); }catch(e){}
+  backupToCloud("daily");
+}
+function openCloudBackupModal(){
+  document.getElementById("cloudBackupModalBg").classList.add("show");
+  const list = document.getElementById("cloudBackupList");
+  list.innerHTML = '<p class="hint">Cargando...</p>';
+  if(!CLOUD_SYNC_ENABLED || !fbDb){
+    list.innerHTML = '<p class="hint">No hay conexión con la nube en este momento.</p>';
+    return;
+  }
+  fbDb.ref("scoreboard_state_backups/" + CURRENT_WORKSPACE_ID).once("value").then(snap=>{
+    const val = snap.val();
+    if(!val){ list.innerHTML = '<p class="hint">Todavía no hay respaldos automáticos guardados para esta cuenta.</p>'; return; }
+    const items = Object.keys(val).map(key=>({ key, data: val[key] }))
+      .sort((a,b)=> (b.data._backupAt||0) - (a.data._backupAt||0))
+      .slice(0, 30);
+    const reasonLabel = { daily:"Respaldo automático del día", reset_manual:"Antes de \"Reiniciar puntajes\"", restore_manual:"Antes de \"Restaurar datos\"" };
+    list.innerHTML = items.map(it=>{
+      const d = new Date(it.data._backupAt || Number(it.key));
+      const fecha = d.toLocaleDateString("es-CL", {weekday:"long", day:"numeric", month:"long"});
+      const hora = d.toLocaleTimeString("es-CL", {hour:"2-digit", minute:"2-digit"});
+      const label = reasonLabel[it.data._backupReason] || "Respaldo";
+      return `<div class="cloud-backup-item">
+        <div class="cbi-info"><b>${fecha}, ${hora}</b><span class="cbi-reason">${label}</span></div>
+        <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" onclick="restoreCloudBackup('${it.key}')">Restaurar</button>
+      </div>`;
+    }).join("");
+  }).catch(e=>{
+    console.error(e);
+    list.innerHTML = '<p class="hint">No se pudieron cargar los respaldos.</p>';
+  });
+}
+function closeCloudBackupModal(){ document.getElementById("cloudBackupModalBg").classList.remove("show"); }
+function restoreCloudBackup(key){
+  fbDb.ref("scoreboard_state_backups/" + CURRENT_WORKSPACE_ID + "/" + key).once("value").then(snap=>{
+    const data = snap.val();
+    if(!data || !data.students){ alert("Ese respaldo no se pudo leer."); return; }
+    const d = new Date(data._backupAt || Number(key));
+    if(!confirm("¿Reemplazar los puntajes actuales por el respaldo del " + d.toLocaleString("es-CL") + "? Esto no borra el respaldo, pero sí reemplaza los datos actuales.")) return;
+    backupToCloud("before_restore_from_backup"); // por si nos equivocamos al elegir el respaldo, también queda registrado el estado justo antes
+    state = hydrateState(data);
+    save();
+    renderAll(); renderGallery();
+    closeCloudBackupModal();
+    alert("Datos restaurados desde el respaldo del " + d.toLocaleString("es-CL") + ".");
+  }).catch(e=>{ console.error(e); alert("No se pudo restaurar ese respaldo."); });
+}
 function resetPoints(){
-  if(!confirm("Esto borrará TODOS los puntajes (no las fotos). ¿Continuar?")) return;
-  if(!confirm("Confirma de nuevo: esta acción no se puede deshacer.")) return;
+  const typed = prompt('Esto borrará TODOS los puntajes de todos los cursos (no las fotos).\n\nEscribe la palabra BORRAR (en mayúsculas) para confirmar:');
+  if(typed !== "BORRAR"){
+    if(typed !== null) alert('No escribiste "BORRAR" exactamente, así que no se borró nada.');
+    return;
+  }
+  backupToCloud("reset_manual");
   Object.values(state.students).forEach(st=> st.history=[]);
   save(); renderAll();
+  alert('Puntajes reiniciados. Se guardó un respaldo automático justo antes — puedes deshacerlo con "☁️ Restaurar respaldo automático" si fue un error.');
 }
 </script>
 </body>
