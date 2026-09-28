@@ -1286,6 +1286,7 @@ function initCloudSync(){
         // Ya tenemos el estado verdadero (recién sincronizado) — este es el momento correcto
         // para el respaldo automático del día, antes de que el profesor toque nada.
         maybeAutoDailyBackup();
+        startPeriodicBackup();
       }
       firstSnapshot = false;
       setSyncBadge(true);
@@ -1346,6 +1347,7 @@ function doLogin(evt){
 function doLogout(){
   if(!confirm("¿Cerrar sesión?")) return;
   if(typeof stopVoiceListening === "function") stopVoiceListening();
+  stopPeriodicBackup();
   firebase.auth().signOut();
 }
 function scheduleCloudPush(){
@@ -3005,14 +3007,40 @@ function backupToCloud(reason){
     snapshot._backupAt = ts;
     snapshot._backupReason = reason;
     fbDb.ref("scoreboard_state_backups/" + CURRENT_WORKSPACE_ID + "/" + ts).set(snapshot)
+      .then(()=> pruneOldBackups())
       .catch(e=>console.error("No se pudo guardar el respaldo automático", e));
   }catch(e){ console.error(e); }
+}
+// Evita que la lista de respaldos crezca para siempre: se queda solo con los más recientes.
+const MAX_CLOUD_BACKUPS = 80;
+function pruneOldBackups(){
+  if(!CLOUD_SYNC_ENABLED || !fbDb) return;
+  const path = "scoreboard_state_backups/" + CURRENT_WORKSPACE_ID;
+  fbDb.ref(path).once("value").then(snap=>{
+    const val = snap.val();
+    if(!val) return;
+    const keys = Object.keys(val).sort((a,b)=> (val[b]._backupAt||0) - (val[a]._backupAt||0));
+    keys.slice(MAX_CLOUD_BACKUPS).forEach(k=>{
+      fbDb.ref(path + "/" + k).remove().catch(()=>{});
+    });
+  }).catch(()=>{});
 }
 function maybeAutoDailyBackup(){
   if(!CLOUD_SYNC_ENABLED || !fbDb || !state) return;
   const key = "cloud_backup_daily_done__" + CURRENT_WORKSPACE_ID + "__" + todayStr();
   try{ if(localStorage.getItem(key)) return; localStorage.setItem(key, "1"); }catch(e){}
   backupToCloud("daily");
+}
+/* Respaldo periódico mientras la clase está en curso: cada 15 minutos, mientras la pestaña
+   siga abierta y sincronizada, se guarda una copia — así, si algo se borra por accidente
+   otra vez, como mucho se pierden minutos de esa clase, nunca semanas. */
+let periodicBackupTimer = null;
+function startPeriodicBackup(){
+  stopPeriodicBackup();
+  periodicBackupTimer = setInterval(()=> backupToCloud("periodic"), 15*60*1000);
+}
+function stopPeriodicBackup(){
+  if(periodicBackupTimer){ clearInterval(periodicBackupTimer); periodicBackupTimer = null; }
 }
 function openCloudBackupModal(){
   document.getElementById("cloudBackupModalBg").classList.add("show");
@@ -3028,7 +3056,7 @@ function openCloudBackupModal(){
     const items = Object.keys(val).map(key=>({ key, data: val[key] }))
       .sort((a,b)=> (b.data._backupAt||0) - (a.data._backupAt||0))
       .slice(0, 30);
-    const reasonLabel = { daily:"Respaldo automático del día", reset_manual:"Antes de \"Reiniciar puntajes\"", restore_manual:"Antes de \"Restaurar datos\"" };
+    const reasonLabel = { daily:"Respaldo automático del día", periodic:"Respaldo automático (cada 15 min)", reset_manual:"Antes de \"Reiniciar puntajes\"", restore_manual:"Antes de \"Restaurar datos\"", before_restore_from_backup:"Antes de restaurar otro respaldo" };
     list.innerHTML = items.map(it=>{
       const d = new Date(it.data._backupAt || Number(it.key));
       const fecha = d.toLocaleDateString("es-CL", {weekday:"long", day:"numeric", month:"long"});
