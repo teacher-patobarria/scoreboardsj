@@ -1969,32 +1969,67 @@ function courseDisplayLabel(cls){
   if(m) return `${m[1]}° Medio ${m[2]}`;
   return cls;
 }
+function escapeHtml(s){
+  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+/* El link "Abrir en Gmail" (mailto-style, view=cm) solo admite texto plano en el cuerpo —
+   Gmail no deja pasar negritas ni viñetas reales a través de esa URL. Por eso generamos
+   también una versión en HTML (con <b> y <ul><li>) que el profesor puede copiar y pegar
+   directamente en el cuerpo del borrador ya abierto, para que quede igual de formateado
+   que la citación original (negritas, viñetas y saltos, tal como en el Word de referencia). */
 function buildCitacionEmail(studentName, cls, o){
   const shortName = shortStudentName(studentName);
   const subject = `Citación a rendir prueba atrasada ${shortName} - ${courseDisplayLabel(cls)}`;
-  const body =
+  const bodyPlain =
 `Estimada Familia de ${shortName}:
 
-Junto con saludar, informamos que ${shortName} debe realizar la siguiente evaluación que tiene pendiente,
+Junto con saludar, informamos que ${shortName} debe realizar la siguiente evaluación que tiene pendiente.
 
-Asignatura: ${o.asignatura}
-Fecha de realización: ${o.fecha}
-Horario de inicio: ${o.hora}
-Duración: ${o.duracion}
-Lugar: ${o.lugar}
-Materiales: ${o.materiales}
+• Asignatura: ${o.asignatura}
+• Fecha de realización: ${o.fecha}
+• Horario de inicio: ${o.hora}
+• Duración: ${o.duracion}
+• Lugar: ${o.lugar}
+• Materiales: ${o.materiales}
 
-Contenidos a evaluar:
+• Contenidos a evaluar:
 ${o.contenidos}
 
-Recordatorio según Reglamento de Evaluación (página 23):
+• Recordatorio según Reglamento de Evaluación (página 23):
 Los y las estudiantes que no se presenten a rendir una evaluación atrasada y no justifiquen, obtendrán la nota mínima (1.0), según Reglamento de Evaluación. La justificación en el caso de las pruebas atrasadas solo será hasta las 11:00 del día que fue citado.
 
 Agradecemos su apoyo para que su hijo(a) asista puntualmente y en las mejores condiciones para rendir su evaluación.
 
 Atentamente,
 ${CURRENT_TEACHER_LABEL}`;
-  return {subject, body};
+
+  const contenidosHtml = escapeHtml(o.contenidos).replace(/\n/g,"<br>");
+  const bodyHtml =
+`<div style="font-family:Arial,sans-serif;font-size:14px;color:#000">
+<p><b>Estimada Familia de ${escapeHtml(shortName)}:</b></p>
+<p>Junto con saludar, informamos que ${escapeHtml(shortName)} debe realizar la siguiente evaluación que tiene pendiente.</p>
+<ul>
+<li><b>Asignatura:</b>&nbsp;${escapeHtml(o.asignatura)}</li>
+<li><b>Fecha de realización:</b> <b>${escapeHtml(o.fecha)}</b></li>
+<li><b>Horario de inicio:</b>&nbsp;${escapeHtml(o.hora)}</li>
+<li><b>Duración:</b>&nbsp;${escapeHtml(o.duracion)}</li>
+<li><b>Lugar:</b>&nbsp;${escapeHtml(o.lugar)}</li>
+<li><b>Materiales:</b>&nbsp;${escapeHtml(o.materiales)}</li>
+</ul>
+<ul>
+<li><b>Contenidos a evaluar:</b></li>
+</ul>
+<p style="margin-left:24px">${contenidosHtml}</p>
+<ul>
+<li><b>Recordatorio según Reglamento de Evaluación</b>&nbsp;(página 23):</li>
+</ul>
+<p>Los y las estudiantes que no se presenten a rendir una evaluación atrasada y no justifiquen, obtendrán la nota mínima (1.0), según Reglamento de Evaluación. La justificación en el caso de las pruebas atrasadas solo será hasta <b>las 11:00 del día</b> que fue citado.</p>
+<p>Agradecemos su apoyo para que su hijo(a) asista puntualmente y en las mejores condiciones para rendir su evaluación.</p>
+<p>Atentamente,<br>${escapeHtml(CURRENT_TEACHER_LABEL)}</p>
+</div>`;
+  // bodyHtml queda calculado por si en el futuro se necesita una versión con formato,
+  // pero el flujo actual usa bodyPlain directo en el link de Gmail (más rápido, un solo clic).
+  return {subject, bodyPlain, bodyHtml};
 }
 // La jefa de sector y el director académico deben ir siempre copiados en las citaciones
 // por evaluación pendiente.
@@ -2024,15 +2059,15 @@ function generateMailDrafts(){
     if(!st) return;
     const c = CONTACTS[id] || {};
     const to = [c.padreEmail, c.madreEmail].filter(Boolean).join(",");
-    const {subject, body} = buildCitacionEmail(st.name, st.cls, {asignatura, fecha, hora, duracion, lugar, materiales, contenidos});
-    items.push({name:st.name, to, subject, body});
+    const {subject, bodyPlain, bodyHtml} = buildCitacionEmail(st.name, st.cls, {asignatura, fecha, hora, duracion, lugar, materiales, contenidos});
+    items.push({name:st.name, to, subject, bodyPlain, bodyHtml});
   });
   items.sort((a,b)=>a.name.localeCompare(b.name));
-  box.innerHTML = items.map(it=>{
+  box.innerHTML = items.map((it)=>{
     if(!it.to){
       return `<div class="mail-result-item"><span class="mri-name">${it.name}</span><span class="mri-missing">⚠️ Sin correo de apoderado registrado</span></div>`;
     }
-    const url = gmailComposeUrl(it.to, it.subject, it.body, CITACION_CC);
+    const url = gmailComposeUrl(it.to, it.subject, it.bodyPlain, CITACION_CC);
     return `<div class="mail-result-item"><div><div class="mri-name">${it.name}</div><div class="mri-to">${it.to} <span class="mri-cc">· CC: ${CITACION_CC}</span></div></div><a class="btn btn-primary" href="${url}" target="_blank" rel="noopener">✉️ Abrir en Gmail</a></div>`;
   }).join("") || `<p class="session-note">No hay alumnos seleccionados con correo disponible.</p>`;
 }
