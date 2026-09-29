@@ -269,15 +269,7 @@ tbody tr.flash{animation:rowFlash 900ms ease}
 .crown{font-size:26px;margin-bottom:-4px}
 .podium-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0}
 
-.camera-box{margin-top:18px;border-top:1px dashed var(--line);padding-top:18px}
-video#cam{width:100%;max-width:420px;border-radius:16px;background:#000;display:none}
 .ranking-scroll{max-height:420px;overflow-y:auto;padding-right:4px}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:14px}
-.photo-card{background:#100e24;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.photo-card img{width:100%;height:110px;object-fit:cover;display:block}
-.photo-cap{font-size:10px;color:var(--muted);padding:6px 8px;line-height:1.3}
-.photo-actions{display:flex;gap:6px;padding:0 8px 8px}
-.photo-actions button{flex:1;font-size:11px;padding:5px}
 
 /* ===== CALENDARIO ===== */
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -643,20 +635,6 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
         </div>
       </div>
 
-      <div class="camera-box">
-        <h3 style="margin:0 0 10px">📸 Capturar el momento</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-          <button class="btn btn-primary" onclick="toggleCamera()" id="camBtn">🎥 Activar cámara</button>
-          <button class="btn btn-ghost" onclick="capturePhoto()" id="capBtn" style="display:none">📸 Capturar foto</button>
-          <label class="btn btn-ghost" style="cursor:pointer">
-            📁 Subir / tomar foto
-            <input type="file" accept="image/*" capture="environment" id="uploadInput" style="display:none" onchange="handleUpload(event)">
-          </label>
-        </div>
-        <video id="cam" autoplay playsinline muted></video>
-        <p class="hint">Si la cámara en vivo no se abre (algunos navegadores bloquean la cámara al abrir el archivo directamente), usa "Subir / tomar foto" — funciona siempre y en celulares abre la cámara directo.</p>
-        <div class="gallery" id="gallery"></div>
-      </div>
     </div>
   </section>
 
@@ -823,9 +801,8 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <button class="btn btn-ghost" onclick="backupJSON()">💾 Respaldar datos</button>
     <label class="btn btn-ghost" style="cursor:pointer">📤 Restaurar datos<input type="file" accept=".json" id="restoreInput" style="display:none" onchange="restoreJSON(event)"></label>
     <button class="btn btn-ghost" onclick="openCloudBackupModal()">☁️ Restaurar respaldo automático</button>
-    <button class="btn btn-danger" onclick="resetPoints()">🗑️ Reiniciar puntajes</button>
   </footer>
-  <p class="hint">Los datos se guardan automáticamente en este computador/navegador. Usa "Respaldar datos" de vez en cuando para no perder el historial. La app también guarda respaldos automáticos en la nube cada día y justo antes de cualquier reinicio — puedes recuperarlos con "☁️ Restaurar respaldo automático".</p>
+  <p class="hint">Los datos se guardan automáticamente en este computador/navegador. Usa "Respaldar datos" de vez en cuando para no perder el historial. La app también guarda respaldos automáticos en la nube cada día — puedes recuperarlos con "☁️ Restaurar respaldo automático".</p>
 </div>
 
 <div class="modal-bg" id="dayModalBg">
@@ -840,7 +817,7 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
   <div class="modal">
     <button class="modal-close" onclick="closeCloudBackupModal()">✕</button>
     <h3>☁️ Respaldos automáticos en la nube</h3>
-    <p class="hint" style="margin-top:-6px">Se guarda uno cada día y otro justo antes de cualquier "Reiniciar puntajes" o "Restaurar datos". Elige uno para volver a ese momento.</p>
+    <p class="hint" style="margin-top:-6px">Se guarda uno cada día, otro cada 15 minutos mientras la app está abierta, y otro justo antes de "Restaurar datos". Elige uno para volver a ese momento.</p>
     <div id="cloudBackupList"><p class="hint">Cargando...</p></div>
   </div>
 </div>
@@ -1281,7 +1258,6 @@ function initCloudSync(){
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
         renderYearProgress();
         renderAll();
-        renderGallery();
         // Si el profesor pidió ver los resultados por voz desde OTRO dispositivo (ej. NEXA
         // en el celular), esta pantalla también salta sola a la pestaña Podio del mismo curso,
         // como si alguien hubiera hecho clic aquí. No se repite en el dispositivo que dio la
@@ -1756,7 +1732,6 @@ function bindTabs(){
       currentTab = btn.dataset.tab;
       document.getElementById("tab-"+currentTab).classList.add("active");
       renderAll();
-      if(currentTab!=="podio") stopCamera();
     });
   });
 }
@@ -1777,7 +1752,6 @@ function goToPodioTab(){
    dock queda visible en cualquier pestaña, esto se puede llamar desde Marcador, Podio, etc.
    sin que el profesor tenga que volver primero al menú de arriba. */
 function openTool(toolId){
-  if(typeof stopCamera==="function") stopCamera();
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   currentTab = "herramientas";
@@ -2246,86 +2220,9 @@ function tickConfetti(){
   else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
 }
 
-/* camera */
-let camStream=null;
-async function toggleCamera(){
-  const video = document.getElementById("cam");
-  const camBtn = document.getElementById("camBtn");
-  const capBtn = document.getElementById("capBtn");
-  if(camStream){ stopCamera(); return; }
-  try{
-    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-    video.srcObject = camStream;
-    video.style.display="block";
-    capBtn.style.display="inline-block";
-    camBtn.textContent="🛑 Apagar cámara";
-  }catch(e){
-    alert("No se pudo abrir la cámara en vivo (puede requerir HTTPS/servidor local). Usa el botón 'Subir / tomar foto' como alternativa.");
-  }
-}
-function stopCamera(){
-  const video = document.getElementById("cam");
-  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-  video.style.display="none";
-  document.getElementById("capBtn").style.display="none";
-  document.getElementById("camBtn").textContent="🎥 Activar cámara";
-}
-function capturePhoto(){
-  const video = document.getElementById("cam");
-  const c = document.createElement("canvas");
-  const w = 640, h = video.videoHeight/video.videoWidth*640 || 480;
-  c.width=w; c.height=h;
-  c.getContext("2d").drawImage(video,0,0,w,h);
-  const dataUrl = c.toDataURL("image/jpeg",0.75);
-  savePhoto(dataUrl);
-}
-function handleUpload(evt){
-  const file = evt.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    const img = new Image();
-    img.onload = ()=>{
-      const c=document.createElement("canvas");
-      const w=640, h= img.height/img.width*640;
-      c.width=w; c.height=h;
-      c.getContext("2d").drawImage(img,0,0,w,h);
-      savePhoto(c.toDataURL("image/jpeg",0.75));
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-  evt.target.value="";
-}
-function savePhoto(dataUrl){
-  const metric = document.getElementById("podMetric").value;
-  const fn = metric==="week"?getWeek: metric==="month"?getMonth: getTotal;
-  const top3 = currentClass!=="Todas" ? Object.values(state.students).filter(s=>s.cls===currentClass).sort((a,b)=>fn(b)-fn(a)).slice(0,3).map(s=>s.name) : [];
-  state.photos.unshift({id:Date.now(), cls:currentClass, date:new Date().toLocaleString("es-CL"), top3, dataUrl});
-  if(state.photos.length>24) state.photos = state.photos.slice(0,24);
-  save();
-  renderGallery();
-}
-function renderGallery(){
-  const g = document.getElementById("gallery");
-  g.innerHTML = state.photos.map(p=>`
-    <div class="photo-card">
-      <img src="${p.dataUrl}">
-      <div class="photo-cap">🏆 ${p.cls} · ${p.date}${p.top3&&p.top3.length?"<br>"+p.top3.map((n,i)=>(i+1)+"° "+n).join("<br>"):""}</div>
-      <div class="photo-actions">
-        <button class="btn btn-ghost" onclick="downloadPhoto(${p.id})">⬇️</button>
-        <button class="btn btn-danger" onclick="deletePhoto(${p.id})">🗑️</button>
-      </div>
-    </div>`).join("");
-}
-function downloadPhoto(id){
-  const p = state.photos.find(x=>x.id===id); if(!p) return;
-  const a=document.createElement("a"); a.href=p.dataUrl; a.download="podio_"+p.cls+"_"+id+".jpg"; a.click();
-}
-function deletePhoto(id){
-  state.photos = state.photos.filter(x=>x.id!==id);
-  save(); renderGallery();
-}
+/* La función "Capturar el momento" (cámara + galería de fotos en Podio) se retiró a
+   pedido del profesor, junto con el botón de reinicio, para reducir la superficie de
+   cosas que un alumno podría andar tocando en el computador de la sala. */
 
 /* ============ INTERESTING FACTS (uno distinto por día, inglés nivel A2) ============ */
 const FACT_CATS = {
@@ -2534,7 +2431,6 @@ function renderCalendario(){
     </div>`;
   }
   grid.innerHTML = html;
-  renderGallery();
 }
 function changeMonth(delta){ calViewDate.setMonth(calViewDate.getMonth()+delta); renderCalendario(); }
 function goToday(){ calViewDate = new Date(); renderCalendario(); }
@@ -3028,7 +2924,7 @@ function restoreJSON(evt){
       backupToCloud("restore_manual"); // por si el archivo subido es el equivocado, queda guardado lo que había antes
       state = hydrateState(data);
       save();
-      renderAll(); renderGallery();
+      renderAll();
       alert("Datos restaurados con éxito.");
     }catch(e){ alert("No se pudo leer el archivo de respaldo."); }
   };
@@ -3126,22 +3022,14 @@ function restoreCloudBackup(key){
     backupToCloud("before_restore_from_backup"); // por si nos equivocamos al elegir el respaldo, también queda registrado el estado justo antes
     state = hydrateState(data);
     save();
-    renderAll(); renderGallery();
+    renderAll();
     closeCloudBackupModal();
     alert("Datos restaurados desde el respaldo del " + d.toLocaleString("es-CL") + ".");
   }).catch(e=>{ console.error(e); alert("No se pudo restaurar ese respaldo."); });
 }
-function resetPoints(){
-  const typed = prompt('Esto borrará TODOS los puntajes de todos los cursos (no las fotos).\n\nEscribe la palabra BORRAR (en mayúsculas) para confirmar:');
-  if(typed !== "BORRAR"){
-    if(typed !== null) alert('No escribiste "BORRAR" exactamente, así que no se borró nada.');
-    return;
-  }
-  backupToCloud("reset_manual");
-  Object.values(state.students).forEach(st=> st.history=[]);
-  save(); renderAll();
-  alert('Puntajes reiniciados. Se guardó un respaldo automático justo antes — puedes deshacerlo con "☁️ Restaurar respaldo automático" si fue un error.');
-}
+/* El botón "Reiniciar puntajes" se quitó a pedido del profesor: si alguna vez hace falta
+   reiniciar (ej. semestre nuevo), se hace directo en Firebase con acceso de administrador,
+   no desde un botón visible en el computador de la sala. */
 </script>
 </body>
 </html>
