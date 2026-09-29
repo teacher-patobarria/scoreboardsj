@@ -1959,9 +1959,19 @@ function shortStudentName(fullName){
   if(t.length < 3) return t.join(" ");
   return [t[2], t[0], t[1]].join(" ");
 }
-function buildCitacionEmail(studentName, o){
+/* Nombre "bonito" del curso para el asunto del correo (ej. "8A" -> "8°A", "1MB" -> "1° Medio B").
+   Los códigos que no calzan con el patrón de básica/media (como "IMA", un taller que no es
+   un curso oficial) se muestran tal cual. */
+function courseDisplayLabel(cls){
+  let m = /^(\d)([A-Z])$/.exec(cls);
+  if(m) return `${m[1]}°${m[2]}`;
+  m = /^(\d)M([A-Z])$/.exec(cls);
+  if(m) return `${m[1]}° Medio ${m[2]}`;
+  return cls;
+}
+function buildCitacionEmail(studentName, cls, o){
   const shortName = shortStudentName(studentName);
-  const subject = `Citación evaluación pendiente – ${o.asignatura} – ${shortName}`;
+  const subject = `Citación a rendir prueba atrasada ${shortName} - ${courseDisplayLabel(cls)}`;
   const body =
 `Estimada Familia de ${shortName}:
 
@@ -1986,8 +1996,9 @@ Atentamente,
 ${CURRENT_TEACHER_LABEL}`;
   return {subject, body};
 }
-// La jefa de sector debe ir siempre copiada en las citaciones por evaluación pendiente.
-const CITACION_CC = "mormazabal@colsanjavier.cl"; // Milena Ormazabal
+// La jefa de sector y el director académico deben ir siempre copiados en las citaciones
+// por evaluación pendiente.
+const CITACION_CC = "mormazabal@colsanjavier.cl,crojas@colsanjavier.cl"; // Milena Ormazabal + Director Académico
 function gmailComposeUrl(to, subject, body, cc){
   const params = new URLSearchParams({view:"cm", fs:"1", to, su:subject, body});
   if(cc) params.set("cc", cc);
@@ -2013,7 +2024,7 @@ function generateMailDrafts(){
     if(!st) return;
     const c = CONTACTS[id] || {};
     const to = [c.padreEmail, c.madreEmail].filter(Boolean).join(",");
-    const {subject, body} = buildCitacionEmail(st.name, {asignatura, fecha, hora, duracion, lugar, materiales, contenidos});
+    const {subject, body} = buildCitacionEmail(st.name, st.cls, {asignatura, fecha, hora, duracion, lugar, materiales, contenidos});
     items.push({name:st.name, to, subject, body});
   });
   items.sort((a,b)=>a.name.localeCompare(b.name));
