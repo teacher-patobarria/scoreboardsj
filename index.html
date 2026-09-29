@@ -354,28 +354,30 @@ tbody tr.flash{animation:rowFlash 900ms ease}
 .stepper-minus:active,.stepper-plus:active{transform:scale(.92)}
 .stepper-btn:disabled{opacity:.3; filter:none; cursor:not-allowed}
 
-/* La barra de progreso es una "mecha de dinamita" que se va consumiendo hacia una bomba
-   fija a la derecha: la parte prendida (fuse-rope, neón) se acorta con el tiempo, dejando
-   ver la mecha ya quemada (fuse-track, oscura) detrás, con una chispa que avanza justo en
-   el borde. Al llegar a cero, la bomba "explota" (ver .fuse-bomb.exploding). */
-.fuse-wrap{position:relative; max-width:520px; height:26px; margin:14px auto 10px; padding-right:38px}
-.fuse-track{position:absolute; inset:0; right:38px; border-radius:999px; background:repeating-linear-gradient(115deg,#2a2650,#2a2650 6px,#211f42 6px,#211f42 12px); border:1px solid var(--line); box-shadow:inset 0 2px 6px #0008}
-.fuse-rope{position:absolute; left:0; top:0; bottom:0; border-radius:999px; overflow:hidden;
+/* La barra de progreso es una "mecha de dinamita": la bomba está fija a la IZQUIERDA, la
+   mecha prendida (fuse-rope, neón) parte completa desde la derecha y se va acortando hacia
+   la bomba a medida que pasa el tiempo, con una chispa que viaja de derecha a izquierda
+   justo en el borde de lo que ya se quemó (fuse-track, oscuro). Al llegar a cero la chispa
+   alcanza la bomba y esta "explota" (ver .fuse-bomb.exploding). */
+.fuse-wrap{position:relative; max-width:520px; height:26px; margin:14px auto 10px}
+.fuse-track-area{position:absolute; left:38px; right:0; top:0; bottom:0}
+.fuse-track{position:absolute; inset:0; border-radius:999px; background:repeating-linear-gradient(115deg,#2a2650,#2a2650 6px,#211f42 6px,#211f42 12px); border:1px solid var(--line); box-shadow:inset 0 2px 6px #0008}
+.fuse-rope{position:absolute; left:0; top:0; bottom:0; width:100%; border-radius:999px; overflow:hidden;
   background:repeating-linear-gradient(115deg,#22d3ee,#22d3ee 6px,#7c3aed 6px,#7c3aed 12px);
   box-shadow:0 0 16px #22d3eecc,0 0 30px #7c3aedaa; transition:width .35s linear, background .3s;}
 .fuse-rope.danger{background:repeating-linear-gradient(115deg,#ff5d5d,#ff5d5d 6px,#ffd166 6px,#ffd166 12px); box-shadow:0 0 18px #ff5d5dcc,0 0 32px #ffd166aa}
-.fuse-spark{position:absolute; top:50%; transform:translate(-50%,-50%); font-size:26px; filter:drop-shadow(0 0 10px #ffd166); transition:left .35s linear; pointer-events:none}
-.fuse-bomb{position:absolute; right:-2px; top:50%; transform:translateY(-50%); font-size:30px; filter:drop-shadow(0 0 8px #7c3aed88)}
+.fuse-spark{position:absolute; top:50%; left:100%; transform:translate(-50%,-50%); font-size:26px; filter:drop-shadow(0 0 10px #ffd166); transition:left .35s linear; pointer-events:none}
+.fuse-bomb{position:absolute; left:-2px; top:50%; transform:translateY(-50%); font-size:30px; filter:drop-shadow(0 0 8px #7c3aed88); z-index:2}
 .fuse-bomb.danger{animation:bombShake .35s infinite}
 @keyframes bombShake{0%,100%{transform:translateY(-50%) rotate(0)}25%{transform:translateY(-50%) rotate(-8deg)}75%{transform:translateY(-50%) rotate(8deg)}}
 .fuse-bomb.exploding{animation:bombBoom .9s ease-out}
 @keyframes bombBoom{0%{transform:translateY(-50%) scale(1)}30%{transform:translateY(-50%) scale(2.6); filter:drop-shadow(0 0 40px #ffd166)}100%{transform:translateY(-50%) scale(1)}}
 .fuse-wrap.exploding::after{
-  content:""; position:absolute; right:-6px; top:50%; width:10px; height:10px; border-radius:50%;
+  content:""; position:absolute; left:-6px; top:50%; width:10px; height:10px; border-radius:50%;
   transform:translate(0,-50%); background:radial-gradient(circle,#fff,#ffd166 40%,#ff5d5d 70%,transparent 75%);
   animation:fuseBlast .7s ease-out forwards; pointer-events:none;
 }
-@keyframes fuseBlast{0%{width:10px;height:10px;opacity:1}80%{opacity:.6}100%{width:240px;height:240px;right:-120px;opacity:0}}
+@keyframes fuseBlast{0%{width:10px;height:10px;opacity:1}80%{opacity:.6}100%{width:240px;height:240px;left:-120px;opacity:0}}
 .timer-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 
 /* ===== INICIO DE CLASE ===== */
@@ -442,8 +444,8 @@ body.fs-active .step-label{font-size:min(2.4vmin,20px);max-width:min(22vmin,200p
 body.fs-active .start-line{width:min(11vmin,130px);height:5px;margin-top:min(6.5vmin,52px)}
 body.fs-active .start-phase-label{font-size:min(4.2vmin,36px);min-height:auto;margin-bottom:1.5vmin}
 body.fs-active .timer-display{font-size:min(24vmin,260px);margin:1vmin 0}
-body.fs-active .fuse-wrap{max-width:min(80vmin,880px);height:min(4vmin,32px);margin:2vmin auto 6px;padding-right:min(6vmin,48px)}
-body.fs-active .fuse-track{right:min(6vmin,48px)}
+body.fs-active .fuse-wrap{max-width:min(80vmin,880px);height:min(4vmin,32px);margin:2vmin auto 6px}
+body.fs-active .fuse-track-area{left:min(6vmin,48px)}
 body.fs-active .fuse-spark{font-size:min(4vmin,34px)}
 body.fs-active .fuse-bomb{font-size:min(4.6vmin,40px)}
 body.fs-active .timer-controls{margin-top:min(3vmin,28px) !important}
@@ -723,10 +725,12 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
           <button class="btn stepper-btn stepper-plus" id="stepperPlus" onclick="adjustTimer(60)">+</button>
         </div>
         <div class="timer-progress-wrap fuse-wrap" id="timerProgressWrap">
-          <div class="fuse-track"></div>
-          <div class="timer-progress-bar fuse-rope" id="timerProgressBar"></div>
-          <div class="fuse-spark" id="fuseSpark">🔥</div>
           <div class="fuse-bomb" id="fuseBomb">💣</div>
+          <div class="fuse-track-area">
+            <div class="fuse-track"></div>
+            <div class="timer-progress-bar fuse-rope" id="timerProgressBar"></div>
+            <div class="fuse-spark" id="fuseSpark">🔥</div>
+          </div>
         </div>
 
         <div class="timer-controls">
