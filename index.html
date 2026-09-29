@@ -336,22 +336,47 @@ tbody tr.flash{animation:rowFlash 900ms ease}
 .timer-wrap{text-align:center;padding:10px 0}
 .timer-modes{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
 .timer-display{
-  font-size:min(20vw,120px); font-weight:900; letter-spacing:2px; font-variant-numeric:tabular-nums;
-  margin:10px 0; text-shadow:0 0 30px #22d3ee55;
+  font-size:min(26vw,168px); font-weight:900; letter-spacing:2px; font-variant-numeric:tabular-nums;
+  margin:0; text-shadow:0 0 36px #22d3ee66;
 }
-.timer-display.danger{color:#ff5d5d; text-shadow:0 0 30px #ff5d5d88; animation:pulse .8s infinite}
+.timer-display.danger{color:#ff5d5d; text-shadow:0 0 36px #ff5d5d99; animation:pulse .8s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-.timer-stepper{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
-.stepper-btn{background:linear-gradient(135deg,#2c2954,#1c1a35);color:var(--text);border:1px solid var(--line);font-size:18px;padding:14px 18px;border-radius:14px;font-weight:900}
-.stepper-btn.stepper-small{font-size:13px;padding:10px 12px}
-.stepper-btn:hover{filter:brightness(1.2)}
-.timer-progress-wrap{max-width:460px;height:18px;margin:20px auto 6px;border-radius:999px;background:#100e24;border:1px solid var(--line);overflow:hidden;box-shadow:inset 0 2px 6px #0008}
-.timer-progress-bar{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#7c3aed,#ec4899);box-shadow:0 0 16px #22d3eecc,0 0 30px #7c3aedaa;transition:width .35s linear, background .3s}
-.timer-progress-bar.danger{background:linear-gradient(90deg,#ff5d5d,#ffd166);box-shadow:0 0 18px #ff5d5dcc,0 0 32px #ffd166aa}
-.presets{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.timer-stepper{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin-bottom:6px}
+.stepper-btn{background:linear-gradient(135deg,#2c2954,#1c1a35);color:var(--text);border:1px solid var(--line);font-weight:900}
+.stepper-btn:hover{filter:brightness(1.25)}
+.stepper-minus,.stepper-plus{
+  width:min(14vw,84px); height:min(14vw,84px); border-radius:50%; font-size:min(7vw,40px); line-height:1;
+  display:flex; align-items:center; justify-content:center; padding:0;
+  box-shadow:0 0 18px #7c3aed55, inset 0 0 0 1px #ffffff11;
+}
+.stepper-plus{background:linear-gradient(135deg,#22c55e,#22d3ee); border:none; box-shadow:0 0 18px #22d3ee77}
+.stepper-minus{background:linear-gradient(135deg,#ff5d5d,#ec4899); border:none; box-shadow:0 0 18px #ff5d5d77}
+.stepper-minus:active,.stepper-plus:active{transform:scale(.92)}
+.stepper-btn:disabled{opacity:.3; filter:none; cursor:not-allowed}
+
+/* La barra de progreso es una "mecha de dinamita" que se va consumiendo hacia una bomba
+   fija a la derecha: la parte prendida (fuse-rope, neón) se acorta con el tiempo, dejando
+   ver la mecha ya quemada (fuse-track, oscura) detrás, con una chispa que avanza justo en
+   el borde. Al llegar a cero, la bomba "explota" (ver .fuse-bomb.exploding). */
+.fuse-wrap{position:relative; max-width:520px; height:26px; margin:14px auto 10px; padding-right:38px}
+.fuse-track{position:absolute; inset:0; right:38px; border-radius:999px; background:repeating-linear-gradient(115deg,#2a2650,#2a2650 6px,#211f42 6px,#211f42 12px); border:1px solid var(--line); box-shadow:inset 0 2px 6px #0008}
+.fuse-rope{position:absolute; left:0; top:0; bottom:0; border-radius:999px; overflow:hidden;
+  background:repeating-linear-gradient(115deg,#22d3ee,#22d3ee 6px,#7c3aed 6px,#7c3aed 12px);
+  box-shadow:0 0 16px #22d3eecc,0 0 30px #7c3aedaa; transition:width .35s linear, background .3s;}
+.fuse-rope.danger{background:repeating-linear-gradient(115deg,#ff5d5d,#ff5d5d 6px,#ffd166 6px,#ffd166 12px); box-shadow:0 0 18px #ff5d5dcc,0 0 32px #ffd166aa}
+.fuse-spark{position:absolute; top:50%; transform:translate(-50%,-50%); font-size:26px; filter:drop-shadow(0 0 10px #ffd166); transition:left .35s linear; pointer-events:none}
+.fuse-bomb{position:absolute; right:-2px; top:50%; transform:translateY(-50%); font-size:30px; filter:drop-shadow(0 0 8px #7c3aed88)}
+.fuse-bomb.danger{animation:bombShake .35s infinite}
+@keyframes bombShake{0%,100%{transform:translateY(-50%) rotate(0)}25%{transform:translateY(-50%) rotate(-8deg)}75%{transform:translateY(-50%) rotate(8deg)}}
+.fuse-bomb.exploding{animation:bombBoom .9s ease-out}
+@keyframes bombBoom{0%{transform:translateY(-50%) scale(1)}30%{transform:translateY(-50%) scale(2.6); filter:drop-shadow(0 0 40px #ffd166)}100%{transform:translateY(-50%) scale(1)}}
+.fuse-wrap.exploding::after{
+  content:""; position:absolute; right:-6px; top:50%; width:10px; height:10px; border-radius:50%;
+  transform:translate(0,-50%); background:radial-gradient(circle,#fff,#ffd166 40%,#ff5d5d 70%,transparent 75%);
+  animation:fuseBlast .7s ease-out forwards; pointer-events:none;
+}
+@keyframes fuseBlast{0%{width:10px;height:10px;opacity:1}80%{opacity:.6}100%{width:240px;height:240px;right:-120px;opacity:0}}
 .timer-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
-.custom-time{display:flex;justify-content:center;gap:8px;align-items:center;margin:14px 0}
-.custom-time input{width:70px;padding:8px;border-radius:10px;border:1px solid var(--line);background:#100e24;color:var(--text);text-align:center;font-size:16px}
 
 /* ===== INICIO DE CLASE ===== */
 .start-wrap{text-align:center;padding:10px 0}
@@ -416,13 +441,16 @@ body.fs-active .step-circle{width:min(13vmin,110px);height:min(13vmin,110px);fon
 body.fs-active .step-label{font-size:min(2.4vmin,20px);max-width:min(22vmin,200px);line-height:1.25}
 body.fs-active .start-line{width:min(11vmin,130px);height:5px;margin-top:min(6.5vmin,52px)}
 body.fs-active .start-phase-label{font-size:min(4.2vmin,36px);min-height:auto;margin-bottom:1.5vmin}
-body.fs-active .timer-display{font-size:min(20vmin,200px);margin:1vmin 0}
-body.fs-active .timer-progress-wrap{max-width:min(70vmin,760px);height:min(3vmin,24px);margin:2vmin auto 6px}
+body.fs-active .timer-display{font-size:min(24vmin,260px);margin:1vmin 0}
+body.fs-active .fuse-wrap{max-width:min(80vmin,880px);height:min(4vmin,32px);margin:2vmin auto 6px;padding-right:min(6vmin,48px)}
+body.fs-active .fuse-track{right:min(6vmin,48px)}
+body.fs-active .fuse-spark{font-size:min(4vmin,34px)}
+body.fs-active .fuse-bomb{font-size:min(4.6vmin,40px)}
 body.fs-active .timer-controls{margin-top:min(3vmin,28px) !important}
 body.fs-active .timer-controls .btn{font-size:min(1.8vmin,16px);padding:min(1.4vmin,14px) min(2vmin,20px)}
 /* TIMER tab en fullscreen también se ve más grande */
-body.fs-active .timer-wrap .timer-stepper{gap:min(1.6vmin,14px)}
-body.fs-active .stepper-btn{font-size:min(2vmin,18px);padding:min(1.6vmin,16px) min(2vmin,20px)}
+body.fs-active .timer-wrap .timer-stepper{gap:min(3vmin,26px)}
+body.fs-active .stepper-minus,body.fs-active .stepper-plus{width:min(9vmin,70px);height:min(9vmin,70px);font-size:min(5vmin,38px)}
 
 /* modal */
 .modal-bg{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
@@ -690,29 +718,15 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
           <button class="btn btn-ghost" id="modeStopwatch" onclick="setTimerMode('stopwatch')">⏱️ Cronómetro</button>
         </div>
         <div class="timer-stepper" id="timerStepper">
-          <button class="btn stepper-btn" onclick="adjustTimer(-60)">− 1 min</button>
-          <button class="btn stepper-btn stepper-small" onclick="adjustTimer(-10)">−10s</button>
+          <button class="btn stepper-btn stepper-minus" id="stepperMinus" onclick="adjustTimer(-60)">−</button>
           <div class="timer-display" id="timerDisplay">00:00</div>
-          <button class="btn stepper-btn stepper-small" onclick="adjustTimer(10)">+10s</button>
-          <button class="btn stepper-btn" onclick="adjustTimer(60)">+ 1 min</button>
+          <button class="btn stepper-btn stepper-plus" id="stepperPlus" onclick="adjustTimer(60)">+</button>
         </div>
-        <div class="timer-progress-wrap" id="timerProgressWrap">
-          <div class="timer-progress-bar" id="timerProgressBar"></div>
-        </div>
-
-        <div class="custom-time" id="customTimeRow">
-          <input type="number" id="customMin" min="0" max="180" value="1"> min
-          <input type="number" id="customSec" min="0" max="59" value="0"> seg
-          <button class="btn btn-ghost" onclick="setCustomTime()">Fijar</button>
-        </div>
-
-        <div class="presets" id="presets">
-          <button class="btn btn-ghost" onclick="setPreset(60)">1 min</button>
-          <button class="btn btn-ghost" onclick="setPreset(180)">3 min</button>
-          <button class="btn btn-ghost" onclick="setPreset(300)">5 min</button>
-          <button class="btn btn-ghost" onclick="setPreset(600)">10 min</button>
-          <button class="btn btn-ghost" onclick="setPreset(2400)">40 min (bloque corto)</button>
-          <button class="btn btn-ghost" onclick="setPreset(4800)">1:20 hrs (bloque largo)</button>
+        <div class="timer-progress-wrap fuse-wrap" id="timerProgressWrap">
+          <div class="fuse-track"></div>
+          <div class="timer-progress-bar fuse-rope" id="timerProgressBar"></div>
+          <div class="fuse-spark" id="fuseSpark">🔥</div>
+          <div class="fuse-bomb" id="fuseBomb">💣</div>
         </div>
 
         <div class="timer-controls">
@@ -985,7 +999,7 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
       <div class="feature-item">
         <div class="fi-icon" style="background:linear-gradient(135deg,#22c55e,#22d3ee)">⏱️</div>
         <div class="fi-title">Timer</div>
-        <div class="fi-desc">Cuenta regresiva o cronómetro con barra de progreso neón, presets rápidos y modo pantalla completa.</div>
+        <div class="fi-desc">Cuenta regresiva o cronómetro, con botones +/− de 1 minuto, una mecha de dinamita animada que explota al llegar a cero, y modo pantalla completa.</div>
       </div>
       <div class="feature-item">
         <div class="fi-icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)">📅</div>
@@ -2792,16 +2806,17 @@ function openDay(key){
 function closeModal(){ document.getElementById("dayModalBg").classList.remove("show"); }
 
 /* ============ TIMER ============ */
-let timerMode="countdown", timerRunning=false, timerRemaining=60, timerElapsed=0, timerInterval=null, timerInitialSeconds=60;
+let timerMode="countdown", timerRunning=false, timerRemaining=300, timerElapsed=0, timerInterval=null, timerInitialSeconds=300;
 function initTimerUI(){ updateTimerDisplay(); setTimerMode("countdown"); }
 function setTimerMode(mode){
   timerMode=mode; pauseTimer();
-  timerRemaining = 60; timerInitialSeconds = 60; timerElapsed=0;
+  timerRemaining = 300; timerInitialSeconds = 300; timerElapsed=0;
   document.getElementById("modeCountdown").classList.toggle("btn-primary", mode==="countdown");
   document.getElementById("modeStopwatch").classList.toggle("btn-primary", mode==="stopwatch");
-  document.getElementById("customTimeRow").style.display = mode==="countdown"?"flex":"none";
-  document.getElementById("presets").style.display = mode==="countdown"?"flex":"none";
   document.getElementById("timerProgressWrap").style.display = mode==="countdown"?"block":"none";
+  const minus = document.getElementById("stepperMinus"), plus = document.getElementById("stepperPlus");
+  if(minus) minus.disabled = mode!=="countdown";
+  if(plus) plus.disabled = mode!=="countdown";
   updateTimerDisplay();
 }
 function fmt(sec){
@@ -2818,26 +2833,21 @@ function updateTimerDisplay(){
   el.classList.toggle("danger", danger);
   if(timerMode==="countdown"){
     const bar = document.getElementById("timerProgressBar");
+    const spark = document.getElementById("fuseSpark");
+    const bomb = document.getElementById("fuseBomb");
     const pct = timerInitialSeconds>0 ? Math.max(0,Math.min(100, timerRemaining/timerInitialSeconds*100)) : 0;
     bar.style.width = pct+"%";
     bar.classList.toggle("danger", danger);
+    if(spark) spark.style.left = pct+"%";
+    if(bomb) bomb.classList.toggle("danger", danger);
   }
 }
-function setPreset(sec){ timerRemaining=sec; timerInitialSeconds=sec; timerElapsed=0; updateTimerDisplay(); }
-function setCustomTime(){
-  const min = parseInt(document.getElementById("customMin").value)||0;
-  const sec = parseInt(document.getElementById("customSec").value)||0;
-  timerRemaining = min*60+sec; timerInitialSeconds = timerRemaining || 1; updateTimerDisplay();
-}
+/* +/- de 1 minuto — es el único modo de ajustar la cuenta regresiva ahora que se
+   simplificó el temporizador (sin presets ni campos de minutos/segundos sueltos). */
 function adjustTimer(deltaSeconds){
   if(timerMode!=="countdown") return;
   timerRemaining = Math.max(0, timerRemaining + deltaSeconds);
   if(timerRemaining > timerInitialSeconds) timerInitialSeconds = timerRemaining;
-  // reflejar el cambio también en los campos de min/seg para que quede consistente
-  const min = Math.floor(timerRemaining/60), sec = timerRemaining%60;
-  const minInput = document.getElementById("customMin"), secInput = document.getElementById("customSec");
-  if(minInput) minInput.value = min;
-  if(secInput) secInput.value = sec;
   updateTimerDisplay();
 }
 function startTimer(){
@@ -2855,13 +2865,24 @@ function startTimer(){
 function pauseTimer(){ timerRunning=false; clearInterval(timerInterval); updateTimerDisplay(); }
 function resetTimer(){
   pauseTimer();
-  if(timerMode==="countdown"){ timerRemaining = timerInitialSeconds>0?timerInitialSeconds:60; }
+  if(timerMode==="countdown"){ timerRemaining = timerInitialSeconds>0?timerInitialSeconds:300; }
   timerElapsed=0;
+  const wrap = document.getElementById("timerProgressWrap"), bomb = document.getElementById("fuseBomb");
+  if(wrap) wrap.classList.remove("exploding");
+  if(bomb) bomb.classList.remove("exploding");
   updateTimerDisplay();
 }
 function timerDone(){
   pauseTimer();
   celebrate();
+  // La bomba de la mecha "explota" al llegar a cero, en el mismo estilo neón del resto de la app.
+  const wrap = document.getElementById("timerProgressWrap"), bomb = document.getElementById("fuseBomb");
+  if(wrap) wrap.classList.add("exploding");
+  if(bomb){
+    bomb.classList.add("exploding");
+    bomb.textContent = "💥";
+    setTimeout(()=>{ bomb.textContent = "💣"; bomb.classList.remove("exploding"); if(wrap) wrap.classList.remove("exploding"); }, 900);
+  }
   let rings=0;
   const alarm = setInterval(()=>{ playDing(); rings++; if(rings>=4) clearInterval(alarm); },350);
 }
