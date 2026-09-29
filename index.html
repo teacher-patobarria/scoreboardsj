@@ -159,6 +159,22 @@ nav.subtabs button:hover{transform:translateY(-2px)}
 .mail-field label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
 .mail-field input,.mail-field textarea,.mail-field select{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);font-size:14px;font-weight:600;font-family:inherit}
 .mail-field textarea{resize:vertical;min-height:70px;font-weight:500}
+/* El ícono de calendario/reloj que trae el navegador por defecto es gris oscuro y casi
+   no se ve sobre el fondo oscuro de la app — lo invertimos a blanco y lo agrandamos un
+   poco para que sea claramente visible y fácil de pinchar. */
+.mail-field input[type=date],.mail-field input[type=time]{color-scheme:dark}
+.mail-field input[type=date]::-webkit-calendar-picker-indicator,
+.mail-field input[type=time]::-webkit-calendar-picker-indicator{
+  filter:invert(1) brightness(1.6);
+  cursor:pointer;
+  padding:4px;
+  border-radius:6px;
+  transform:scale(1.25);
+}
+.mail-field input[type=date]::-webkit-calendar-picker-indicator:hover,
+.mail-field input[type=time]::-webkit-calendar-picker-indicator:hover{
+  background:#ffffff22;
+}
 .mail-students-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mail-students-bar input{flex:1;min-width:200px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);font-size:14px}
 .mail-count{font-size:12px;font-weight:800;color:#3b82f6;white-space:nowrap}
