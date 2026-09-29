@@ -2048,9 +2048,8 @@ ${CURRENT_TEACHER_LABEL}`;
   // pero el flujo actual usa bodyPlain directo en el link de Gmail (más rápido, un solo clic).
   return {subject, bodyPlain, bodyHtml};
 }
-// La jefa de sector y el director académico deben ir siempre copiados en las citaciones
-// por evaluación pendiente.
-const CITACION_CC = "mormazabal@colsanjavier.cl,crojas@colsanjavier.cl"; // Milena Ormazabal + Director Académico
+// La jefa de sector debe ir siempre copiada en las citaciones por evaluación pendiente.
+const CITACION_CC = "mormazabal@colsanjavier.cl"; // Milena Ormazabal
 function gmailComposeUrl(to, subject, body, cc){
   const params = new URLSearchParams({view:"cm", fs:"1", to, su:subject, body});
   if(cc) params.set("cc", cc);
