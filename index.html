@@ -159,22 +159,20 @@ nav.subtabs button:hover{transform:translateY(-2px)}
 .mail-field label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
 .mail-field input,.mail-field textarea,.mail-field select{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);font-size:14px;font-weight:600;font-family:inherit}
 .mail-field textarea{resize:vertical;min-height:70px;font-weight:500}
-/* El ícono de calendario/reloj que trae el navegador por defecto es gris oscuro y casi
-   no se ve sobre el fondo oscuro de la app — lo invertimos a blanco y lo agrandamos un
-   poco para que sea claramente visible y fácil de pinchar. */
+/* El ícono de calendario/reloj que trae el navegador por defecto sale oscuro y casi no se
+   ve sobre el fondo oscuro de la app, y varía según el sistema operativo. En vez de pelear
+   con eso, lo ocultamos y ponemos un botón con emoji (📅 / 🕐) que siempre se ve, y que abre
+   el mismo selector nativo al hacer clic. */
 .mail-field input[type=date],.mail-field input[type=time]{color-scheme:dark}
-.mail-field input[type=date]::-webkit-calendar-picker-indicator,
-.mail-field input[type=time]::-webkit-calendar-picker-indicator{
-  filter:invert(1) brightness(1.6);
-  cursor:pointer;
-  padding:4px;
-  border-radius:6px;
-  transform:scale(1.25);
+.mail-date-wrap{position:relative}
+.mail-date-wrap input{padding-right:40px; width:100%}
+.mail-date-wrap input::-webkit-calendar-picker-indicator{opacity:0; pointer-events:none}
+.mail-date-emoji{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  background:none; border:none; font-size:19px; line-height:1; cursor:pointer;
+  padding:4px; border-radius:8px;
 }
-.mail-field input[type=date]::-webkit-calendar-picker-indicator:hover,
-.mail-field input[type=time]::-webkit-calendar-picker-indicator:hover{
-  background:#ffffff22;
-}
+.mail-date-emoji:hover{background:#ffffff22}
 .mail-students-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mail-students-bar input{flex:1;min-width:200px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);font-size:14px}
 .mail-count{font-size:12px;font-weight:800;color:#3b82f6;white-space:nowrap}
@@ -810,11 +808,17 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
           </div>
           <div class="mail-field">
             <label>Fecha de realización</label>
-            <input type="date" id="mailFecha">
+            <div class="mail-date-wrap">
+              <input type="date" id="mailFecha">
+              <button type="button" class="mail-date-emoji" onclick="openPicker('mailFecha')" title="Abrir calendario">📅</button>
+            </div>
           </div>
           <div class="mail-field">
             <label>Horario de inicio</label>
-            <input type="time" id="mailHora">
+            <div class="mail-date-wrap">
+              <input type="time" id="mailHora">
+              <button type="button" class="mail-date-emoji" onclick="openPicker('mailHora')" title="Abrir reloj">🕐</button>
+            </div>
           </div>
           <div class="mail-field">
             <label>Duración</label>
@@ -1901,6 +1905,14 @@ function loadContacts(){
     CONTACTS = snap.val() || {};
     renderMailStudents();
   }).catch(e=>{ console.warn("No se pudieron cargar los contactos de apoderados:", e); });
+}
+/* Abre el selector nativo de fecha/hora al pinchar el botón con emoji (el ícono nativo del
+   navegador queda oculto, ver CSS .mail-date-emoji). showPicker() es soportado en Chrome/Edge;
+   si el navegador no lo soporta, al menos enfocamos el campo para que se pueda escribir. */
+function openPicker(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  try{ el.showPicker(); }catch(e){ el.focus(); }
 }
 function renderMailClassOptions(){
   const sel = document.getElementById("mailClass");
