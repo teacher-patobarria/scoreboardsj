@@ -1949,11 +1949,14 @@ function mailSelectAll(){
 }
 function mailSelectNone(){ MAIL_SELECTED.clear(); renderMailStudents(); }
 /* Los nombres en la base están guardados como "Apellido1 Apellido2 Nombre1 Nombre2...".
-   Para dirigirse a la familia usamos solo nombre + los dos apellidos (los 3 primeros
-   términos), sin segundos nombres, tal como pidió el profesor. La lista de selección de
-   alumnos sigue mostrando el nombre completo, para poder distinguir homónimos. */
+   Para dirigirse a la familia el profesor pidió el orden natural: Nombre Apellido1 Apellido2
+   (ej. "Barrientos Chávez Josefa Ignacia" -> "Josefa Barrientos Chávez"), sin segundos
+   nombres. La lista de selección de alumnos sigue mostrando el nombre completo tal como está
+   en la base, para poder distinguir homónimos. */
 function shortStudentName(fullName){
-  return (fullName || "").trim().split(/\s+/).slice(0,3).join(" ");
+  const t = (fullName || "").trim().split(/\s+/);
+  if(t.length < 3) return t.join(" ");
+  return [t[2], t[0], t[1]].join(" ");
 }
 function buildCitacionEmail(studentName, o){
   const shortName = shortStudentName(studentName);
