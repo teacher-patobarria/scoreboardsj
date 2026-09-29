@@ -150,6 +150,24 @@ nav.subtabs button:hover{transform:translateY(-2px)}
 .session-field input,.session-field select{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);font-size:14px;font-weight:700}
 .session-note{font-size:11px;color:var(--muted);margin-top:8px}
 
+/* ===== CORREOS A APODERADOS ===== */
+.mail-card{margin-bottom:14px}
+.mail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.mail-field{display:flex;flex-direction:column;gap:5px}
+.mail-field label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
+.mail-field input,.mail-field textarea,.mail-field select{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#100e24;color:var(--text);font-size:14px;font-weight:600;font-family:inherit}
+.mail-field textarea{resize:vertical;min-height:70px;font-weight:500}
+.mail-students{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;max-height:220px;overflow:auto;padding:4px}
+.mail-student-chip{display:flex;align-items:center;gap:6px;background:#151230a0;border:1px solid var(--line);padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
+.mail-student-chip input{accent-color:#3b82f6}
+.mail-student-chip.no-email{opacity:.5}
+.mail-student-chip .warn{color:#ffd166;font-size:11px;font-weight:800}
+.mail-results{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.mail-result-item{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#100e24;border:1px solid var(--line);border-radius:12px;padding:10px 14px;flex-wrap:wrap}
+.mail-result-item .mri-name{font-weight:800;font-size:13px}
+.mail-result-item .mri-to{font-size:11px;color:var(--muted)}
+.mail-result-item .mri-missing{font-size:11px;color:#ff5d5d;font-weight:700}
+
 /* ===== SORTEO ===== */
 .draw-card{margin-bottom:14px; border-color:#ff5d5d55}
 .draw-card-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
@@ -496,6 +514,7 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <button data-tool="grupos" style="background:linear-gradient(135deg,#22c55e,#4ade80)" onclick="openTool('grupos')">👥<span class="td-tooltip">Grupos y parejas</span></button>
     <button data-tool="sorteo" style="background:linear-gradient(135deg,#ff5d5d,#ffd166)" onclick="openTool('sorteo')">🎲<span class="td-tooltip">Estudiante al azar</span></button>
     <button data-tool="voz" style="background:linear-gradient(135deg,#ff5d5d,#7c3aed)" onclick="openTool('voz')">🎤<span class="td-tooltip">NEXA · Puntos por voz</span></button>
+    <button data-tool="correos" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)" onclick="openTool('correos')">✉️<span class="td-tooltip">Correos a apoderados</span></button>
   </nav>
 
   <!-- CLASS PREPARATION -->
@@ -746,6 +765,60 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
             <button class="btn btn-primary" id="voiceToggleBtn" onclick="toggleVoiceListening()">🎤 Puntos por voz: OFF</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div id="tool-correos" class="toolpane">
+      <div class="card mail-card">
+        <h3 style="margin:0 0 4px">✉️ Citación por evaluación pendiente</h3>
+        <p class="session-note" style="margin:0 0 12px">Elige el curso y el/los alumno(s), completa los datos de la prueba y genera el correo. Se abrirá en Gmail ya redactado — tú lo revisas y le das Enviar.</p>
+
+        <div class="mail-grid">
+          <div class="mail-field">
+            <label>Curso</label>
+            <select id="mailClass" onchange="renderMailStudents()"></select>
+          </div>
+          <div class="mail-field">
+            <label>Asignatura</label>
+            <input type="text" id="mailAsignatura" value="Inglés">
+          </div>
+          <div class="mail-field">
+            <label>Fecha de realización</label>
+            <input type="text" id="mailFecha" placeholder="Ej: Martes 23 de junio">
+          </div>
+          <div class="mail-field">
+            <label>Horario de inicio</label>
+            <input type="text" id="mailHora" placeholder="Ej: 15:40">
+          </div>
+          <div class="mail-field">
+            <label>Duración</label>
+            <input type="text" id="mailDuracion" value="60 minutos">
+          </div>
+          <div class="mail-field">
+            <label>Lugar</label>
+            <input type="text" id="mailLugar" placeholder="Ej: Sala IV medio C">
+          </div>
+          <div class="mail-field">
+            <label>Materiales</label>
+            <input type="text" id="mailMateriales" value="Lápiz y goma">
+          </div>
+        </div>
+
+        <div class="mail-field">
+          <label>Contenidos a evaluar</label>
+          <textarea id="mailContenidos" placeholder="Escribe aquí los contenidos que el alumno debe estudiar..."></textarea>
+        </div>
+
+        <p class="session-note" style="margin:14px 0 4px" id="mailStudentsHint">Selecciona a qué alumno(s) va dirigido:</p>
+        <div class="mail-students" id="mailStudents"></div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-ghost" onclick="mailSelectAll()">✅ Seleccionar todos</button>
+          <button class="btn btn-ghost" onclick="mailSelectNone()">🧹 Ninguno</button>
+          <button class="btn btn-primary" onclick="generateMailDrafts()">✉️ Generar correo(s)</button>
+        </div>
+
+        <div class="mail-results" id="mailResults"></div>
       </div>
     </div>
   </section>
@@ -1114,6 +1187,12 @@ const firebaseConfig = {
 const CLOUD_SYNC_ENABLED = !!(firebaseConfig.apiKey && firebaseConfig.apiKey !== "TU_API_KEY");
 let fbDb = null;
 let pushTimer = null;
+/* Correos a apoderados: contactos (padreEmail/madreEmail por alumno) cargados desde
+   Firebase (scoreboard_contacts/<workspaceId>), protegidos por las mismas reglas por
+   profesor que el resto de los datos — nunca se embeben en el HTML público. */
+let CONTACTS = {};
+let CURRENT_TEACHER_LABEL = "";
+let MAIL_SELECTED = new Set();
 
 function slug(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-"); }
 
@@ -1183,9 +1262,13 @@ function bootWorkspace(cfg){
   CLASS_COLOR = cfg.classColor;
   CLASS_BLOCKS = cfg.classBlocks;
   CURRENT_WORKSPACE_ID = cfg.workspaceId;
+  CURRENT_TEACHER_LABEL = cfg.label || "";
   STORAGE_KEY = "score_english_state_v1__" + cfg.workspaceId;
   CLOUD_PATH = "scoreboard_state/" + cfg.workspaceId;
   currentClass = "Todas";
+  CONTACTS = {};
+  MAIL_SELECTED = new Set();
+  renderMailClassOptions();
   const subtitle = document.getElementById("appSubtitle");
   if(subtitle) subtitle.textContent = "Marcador de participación en inglés · " + cfg.classList.join(" · ");
   const teacherBadge = document.getElementById("teacherBadge");
@@ -1219,6 +1302,7 @@ function initCloudSync(){
   if(!ensureFirebaseApp()){ setSyncBadge(false); return; }
   try{
     fbDb = firebase.database();
+    loadContacts();
     if(cloudListenerRef) cloudListenerRef.off();
     const ref = fbDb.ref(CLOUD_PATH);
     cloudListenerRef = ref;
@@ -1761,6 +1845,7 @@ function openTool(toolId){
   if(dockBtn) dockBtn.classList.add("active");
   document.querySelectorAll(".toolpane").forEach(p=>p.classList.remove("active"));
   document.getElementById("tool-"+toolId).classList.add("active");
+  if(toolId==="correos") renderMailStudents();
   renderAll();
 }
 // Nombre anterior, usado por los comandos de voz de NEXA — se mantiene como alias para no
@@ -1770,6 +1855,119 @@ function bindToolDock(){
   document.querySelectorAll(".tool-dock button").forEach(btn=>{
     btn.addEventListener("click", ()=> openTool(btn.dataset.tool));
   });
+}
+
+/* ============ CORREOS A APODERADOS ============
+   El Scoreboard es un archivo estático sin backend propio, así que no puede iniciar sesión
+   en Gmail por sí mismo. En vez de eso: el profesor llena el formulario, y por cada alumno
+   armamos un link "mailto compose" de Gmail (https://mail.google.com/mail/?view=cm&...) con
+   el destinatario/asunto/cuerpo ya rellenos. Al hacer clic se abre Gmail YA LOGUEADO en el
+   navegador del profesor, con el borrador listo — él solo revisa y presiona Enviar. Nunca se
+   envía nada automáticamente. Los correos de los apoderados viven solo en Firebase (protegidos
+   por las mismas reglas por profesor que el resto de los datos), nunca en este HTML público. */
+function loadContacts(){
+  if(!fbDb) return;
+  fbDb.ref("scoreboard_contacts/"+CURRENT_WORKSPACE_ID).once("value").then(snap=>{
+    CONTACTS = snap.val() || {};
+    renderMailStudents();
+  }).catch(e=>{ console.warn("No se pudieron cargar los contactos de apoderados:", e); });
+}
+function renderMailClassOptions(){
+  const sel = document.getElementById("mailClass");
+  if(!sel) return;
+  sel.innerHTML = CLASS_LIST.map(c=>`<option value="${c}">${c}</option>`).join("");
+}
+function renderMailStudents(){
+  const box = document.getElementById("mailStudents");
+  const sel = document.getElementById("mailClass");
+  if(!box || !sel) return;
+  const cls = sel.value || CLASS_LIST[0];
+  if(!cls){ box.innerHTML = ""; return; }
+  const list = Object.values(state.students).filter(s=>s.cls===cls).sort((a,b)=>a.name.localeCompare(b.name));
+  box.innerHTML = list.map(st=>{
+    const c = CONTACTS[st.id];
+    const hasEmail = !!(c && (c.padreEmail || c.madreEmail));
+    const checked = MAIL_SELECTED.has(st.id) ? "checked" : "";
+    return `<label class="mail-student-chip ${hasEmail?"":"no-email"}">
+      <input type="checkbox" data-id="${st.id}" ${checked} onchange="toggleMailStudent('${st.id}', this.checked)">
+      ${st.name}${hasEmail?"":' <span class="warn">sin correo</span>'}
+    </label>`;
+  }).join("") || `<p class="session-note">Este curso no tiene alumnos.</p>`;
+}
+function toggleMailStudent(id, checked){
+  if(checked) MAIL_SELECTED.add(id); else MAIL_SELECTED.delete(id);
+}
+function mailSelectAll(){
+  const cls = document.getElementById("mailClass")?.value;
+  Object.values(state.students).filter(s=>s.cls===cls).forEach(st=>{
+    const c = CONTACTS[st.id];
+    if(c && (c.padreEmail || c.madreEmail)) MAIL_SELECTED.add(st.id);
+  });
+  renderMailStudents();
+}
+function mailSelectNone(){ MAIL_SELECTED.clear(); renderMailStudents(); }
+function buildCitacionEmail(studentName, o){
+  const subject = `Citación evaluación pendiente – ${o.asignatura} – ${studentName}`;
+  const body =
+`Estimada Familia de ${studentName}:
+
+Junto con saludar, informamos que ${studentName} debe realizar la siguiente evaluación que tiene pendiente,
+
+Asignatura: ${o.asignatura}
+Fecha de realización: ${o.fecha}
+Horario de inicio: ${o.hora}
+Duración: ${o.duracion}
+Lugar: ${o.lugar}
+Materiales: ${o.materiales}
+
+Contenidos a evaluar:
+${o.contenidos}
+
+Recordatorio según Reglamento de Evaluación (página 23):
+Los y las estudiantes que no se presenten a rendir una evaluación atrasada y no justifiquen, obtendrán la nota mínima (1.0), según Reglamento de Evaluación. La justificación en el caso de las pruebas atrasadas solo será hasta las 11:00 del día que fue citado.
+
+Agradecemos su apoyo para que su hijo(a) asista puntualmente y en las mejores condiciones para rendir su evaluación.
+
+Atentamente,
+${CURRENT_TEACHER_LABEL}`;
+  return {subject, body};
+}
+function gmailComposeUrl(to, subject, body){
+  const params = new URLSearchParams({view:"cm", fs:"1", to, su:subject, body});
+  return "https://mail.google.com/mail/?" + params.toString();
+}
+function generateMailDrafts(){
+  const cls = document.getElementById("mailClass")?.value;
+  if(!cls || MAIL_SELECTED.size===0){ alert("Selecciona al menos un alumno para generar el correo."); return; }
+  const asignatura = document.getElementById("mailAsignatura").value.trim() || "Inglés";
+  const fecha = document.getElementById("mailFecha").value.trim();
+  const hora = document.getElementById("mailHora").value.trim();
+  const duracion = document.getElementById("mailDuracion").value.trim() || "60 minutos";
+  const lugar = document.getElementById("mailLugar").value.trim();
+  const materiales = document.getElementById("mailMateriales").value.trim() || "Lápiz y goma";
+  const contenidos = document.getElementById("mailContenidos").value.trim();
+  const box = document.getElementById("mailResults");
+  if(!fecha || !hora || !lugar || !contenidos){
+    alert("Completa al menos la fecha, el horario, el lugar y los contenidos antes de generar el correo.");
+    return;
+  }
+  const items = [];
+  MAIL_SELECTED.forEach(id=>{
+    const st = state.students[id];
+    if(!st || st.cls!==cls) return;
+    const c = CONTACTS[id] || {};
+    const to = [c.padreEmail, c.madreEmail].filter(Boolean).join(",");
+    const {subject, body} = buildCitacionEmail(st.name, {asignatura, fecha, hora, duracion, lugar, materiales, contenidos});
+    items.push({name:st.name, to, subject, body});
+  });
+  items.sort((a,b)=>a.name.localeCompare(b.name));
+  box.innerHTML = items.map(it=>{
+    if(!it.to){
+      return `<div class="mail-result-item"><span class="mri-name">${it.name}</span><span class="mri-missing">⚠️ Sin correo de apoderado registrado</span></div>`;
+    }
+    const url = gmailComposeUrl(it.to, it.subject, it.body);
+    return `<div class="mail-result-item"><div><div class="mri-name">${it.name}</div><div class="mri-to">${it.to}</div></div><a class="btn btn-primary" href="${url}" target="_blank" rel="noopener">✉️ Abrir en Gmail</a></div>`;
+  }).join("") || `<p class="session-note">No hay alumnos seleccionados con correo disponible.</p>`;
 }
 function renderAll(){
   renderSessionControls();
