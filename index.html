@@ -294,8 +294,8 @@ tbody tr.flash{animation:rowFlash 900ms ease}
 .podium-wrap{text-align:center;padding:10px 0 6px}
 .podium-title{font-size:22px;font-weight:900;margin-bottom:4px}
 .podium-sub{color:var(--muted);font-size:13px;margin-bottom:26px}
-.stage{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin:20px auto 10px;max-width:640px}
-.pod-col{width:31%;display:flex;flex-direction:column;align-items:center}
+.stage{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:20px auto 10px;max-width:640px}
+.pod-col{width:18%;display:flex;flex-direction:column;align-items:center}
 .pod-avatar{
   width:66px;height:66px;border-radius:50%; display:flex;align-items:center;justify-content:center;
   font-weight:900; font-size:22px; color:#08081a; margin-bottom:8px; border:3px solid #fff3;
@@ -307,6 +307,10 @@ tbody tr.flash{animation:rowFlash 900ms ease}
 .pod-1 .pod-block{height:150px;background:linear-gradient(180deg,#ffe27a,var(--gold))}
 .pod-2 .pod-block{height:110px;background:linear-gradient(180deg,#f1f3fa,var(--silver))}
 .pod-3 .pod-block{height:85px;background:linear-gradient(180deg,#f0be86,var(--bronze))}
+.pod-4 .pod-block{height:62px;font-size:20px;background:linear-gradient(180deg,#c4b5fd,#7c3aed)}
+.pod-5 .pod-block{height:48px;font-size:18px;background:linear-gradient(180deg,#a5f3fc,#22d3ee)}
+.pod-4 .pod-avatar,.pod-5 .pod-avatar{width:52px;height:52px;font-size:16px}
+.pod-4 .pod-name,.pod-5 .pod-name{font-size:11.5px;max-width:96px}
 .crown{font-size:26px;margin-bottom:-4px}
 .podium-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0}
 
@@ -2481,8 +2485,8 @@ function renderPodio(){
   const metric = document.getElementById("podMetric").value;
   const fn = metric==="week"?getWeek: metric==="month"?getMonth: getTotal;
   const ranked = Object.values(state.students).filter(s=>s.cls===currentClass).sort((a,b)=>fn(b)-fn(a));
-  const list = ranked.slice(0,3);
-  const order = [1,0,2]; // visual order: 2nd, 1st, 3rd
+  const list = ranked.slice(0,5);
+  const order = [3,1,0,2,4]; // visual order: 4°, 2°, 1°, 3°, 5°
   stage.innerHTML = order.map(idx=>{
     const st = list[idx];
     if(!st) return `<div class="pod-col"></div>`;
@@ -2498,12 +2502,13 @@ function renderPodio(){
     </div>`;
   }).join("");
 
-  document.getElementById("top10Rows").innerHTML = ranked.map((st,i)=>{
+  // El podio ya muestra del 1° al 5° lugar, así que esta tabla de abajo arranca desde el 6°.
+  const rest = ranked.slice(5);
+  document.getElementById("top10Rows").innerHTML = rest.map((st,i)=>{
     const pts = fn(st);
-    const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);
-    const rankClass = i===0?"top1":i===1?"top2":i===2?"top3":"";
-    return `<tr class="${rankClass}"><td><span class="rankbadge">${medal}</span></td><td class="name">${st.name}</td><td class="total">${pts}</td></tr>`;
-  }).join("") || `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:14px">Sin estudiantes en este curso</td></tr>`;
+    const rank = i+6;
+    return `<tr><td><span class="rankbadge">${rank}</span></td><td class="name">${st.name}</td><td class="total">${pts}</td></tr>`;
+  }).join("") || `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:14px">${ranked.length? "🎉 Todo el curso está en el podio" : "Sin estudiantes en este curso"}</td></tr>`;
 }
 
 /* confetti */
