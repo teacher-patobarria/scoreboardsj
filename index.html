@@ -579,7 +579,7 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <button data-tool="sorteo" style="background:linear-gradient(135deg,#ff5d5d,#ffd166)" onclick="openTool('sorteo')">🎲<span class="td-tooltip">Estudiante al azar</span></button>
     <button data-tool="voz" style="background:linear-gradient(135deg,#ff5d5d,#7c3aed)" onclick="openTool('voz')">🎤<span class="td-tooltip">NEXA · Puntos por voz</span></button>
     <button data-tool="correos" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)" onclick="openTool('correos')">✉️<span class="td-tooltip">Correos a apoderados</span></button>
-    <button data-tool="deletreo" style="background:linear-gradient(135deg,#f59e0b,#ec4899)" onclick="openTool('deletreo')">🔤<span class="td-tooltip">Deletreo</span></button>
+    <button data-tool="deletreo" style="background:linear-gradient(135deg,#f59e0b,#ec4899)" onclick="openTool('deletreo')">🐝<span class="td-tooltip">Deletreo</span></button>
   </nav>
 
   <!-- CLASS PREPARATION -->
@@ -819,7 +819,7 @@ footer.settings{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px;justify-cont
     <div id="tool-deletreo" class="toolpane">
       <div class="card spell-card">
         <div class="spell-top">
-          <h3 style="margin:0">🔤 Deletreo</h3>
+          <h3 style="margin:0">🐝 Spelling Bee 🔤</h3>
           <div class="spell-levels" id="spellLevels"></div>
         </div>
         <div class="spell-stage" id="spellStage">
@@ -1952,12 +1952,26 @@ function spellReset(){
   spellUpdateCount();
   document.getElementById("spellSub").textContent = "Pool reiniciado";
 }
+function spellPickVoice(){
+  const vs = speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));
+  const pref = [/google us english/i,/samantha/i,/microsoft (aria|jenny|guy).*online/i,/natural/i,/zira|david/i,/en[-_]us/i];
+  for(const re of pref){ const v = vs.find(v=>re.test(v.name) || re.test(v.lang)); if(v) return v; }
+  return vs[0] || null;
+}
+if(window.speechSynthesis){ speechSynthesis.onvoiceschanged = ()=>{}; speechSynthesis.getVoices(); }
 function spellSpeak(){
   if(!spellCurrent || !window.speechSynthesis) return;
   try{
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(spellCurrent); u.lang = "en-US"; u.rate = 0.8;
-    speechSynthesis.speak(u);
+    const v = spellPickVoice();
+    const say = (txt,rate)=>{
+      const u = new SpeechSynthesisUtterance(txt);
+      u.lang = "en-US"; u.rate = rate; u.pitch = 1; u.volume = 1;
+      if(v) u.voice = v;
+      speechSynthesis.speak(u);
+    };
+    say(spellCurrent, 0.7);
+    say(spellCurrent, 0.55);
   }catch(e){}
 }
 function spellReveal(){
